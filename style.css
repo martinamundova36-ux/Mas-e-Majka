@@ -26,3 +26,8 @@
 .video-placeholder h3{font-size:1.25rem;margin:15px 0 4px}.video-placeholder p{font-size:.88rem;color:#73756c;margin:0}
 .video-play{width:58px;height:58px;border:2px solid #a77c6b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#a77c6b;font-size:23px;padding-left:4px}
 @media(max-width:760px){.video-grid{grid-template-columns:1fr}.video-section{margin-top:42px}.video-placeholder{aspect-ratio:16/9;min-height:0}}
+
+/* Language switcher */
+.language-switch{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;margin-left:12px;font-size:.85rem;font-weight:700;letter-spacing:.05em}
+.language-switch a{color:inherit;text-decoration:none;opacity:.7}.language-switch a:hover{opacity:1;text-decoration:underline}.language-switch [aria-current="page"]{color:#a77c6b}
+@media(max-width:850px){.language-switch{margin:12px 0 0;padding:10px 0}}
