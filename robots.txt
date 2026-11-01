@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://martinamundova36-ux.github.io/Mas-e-Majka/sitemap.xml
