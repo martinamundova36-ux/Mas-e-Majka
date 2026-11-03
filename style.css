@@ -53,3 +53,23 @@
 .gallery-section .luxury-gallery>.luxury-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .gallery-section .luxury-gallery>.luxury-portrait img{object-position:center 38%}
 @media(max-width:700px){.gallery-section .luxury-gallery{grid-template-columns:minmax(0,1fr);grid-template-rows:340px 440px;gap:16px}.gallery-section .luxury-gallery>.luxury-photo,.gallery-section .luxury-gallery>.luxury-feature,.gallery-section .luxury-gallery>.luxury-portrait{grid-row:auto;height:100%}.gallery-section .luxury-gallery>.luxury-portrait img{object-position:center 30%}}
+
+
+/* Interactive luxury spa homepage */
+.spa-landing{background:linear-gradient(125deg,#76503b 0%,#c8a78a 40%,#f5e8d7 70%,#f6eadd 100%);overflow:hidden}
+.spa-layout{display:grid;grid-template-columns:1fr 1fr;min-height:680px;align-items:stretch;gap:0}
+.spa-photo{position:relative;min-height:650px;overflow:hidden;background:#7b5d49}
+.spa-photo img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;transition:transform .7s ease;filter:sepia(.16) saturate(.88)}
+.spa-photo:hover img{transform:scale(1.045)}
+.spa-photo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(44,27,19,.35),transparent 38%,rgba(44,27,19,.22))}
+.spa-photo-label{position:absolute;top:35px;left:35px;z-index:1;color:#fff6e9;font:500 clamp(1.5rem,3vw,2.5rem) 'Playfair Display',Georgia,serif;letter-spacing:.07em}
+.spa-photo-label span{display:block;font:500 .7rem 'DM Sans',sans-serif;letter-spacing:.25em;margin-top:10px}
+.spa-content{padding:clamp(35px,5vw,80px);display:flex;flex-direction:column;justify-content:center;color:#4d2d1d;background:radial-gradient(circle at 100% 0%,#fff8ed 0%,transparent 55%),linear-gradient(150deg,#f5e8d8,#e5c8ac)}
+.spa-kicker{font-size:.7rem;font-weight:700;letter-spacing:.22em;color:#9b643e}
+.spa-content h1{font-size:clamp(2.8rem,4.3vw,5.5rem);line-height:1.06;margin:18px 0 26px;letter-spacing:-.035em}
+.spa-content h1 em{font-weight:400}.spa-content h1 strong{display:block;font-weight:500;letter-spacing:.04em}.spa-content h1 small{display:block;font-size:.45em;font-weight:400;font-style:italic;margin-top:12px;letter-spacing:0}
+.spa-benefits{display:grid;gap:9px;font:500 1rem 'DM Sans',sans-serif;margin-bottom:26px}.spa-benefits span:first-letter{color:#b67b49}
+.spa-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:28px}.spa-primary{display:inline-flex;align-items:center;justify-content:space-between;gap:25px;background:#86512e;color:white;padding:15px 20px;border-radius:30px;text-decoration:none;font-weight:700;transition:transform .2s,background .2s}.spa-primary:hover{background:#60361f;transform:translateY(-3px)}.spa-secondary{font-weight:700;text-decoration:underline;text-underline-offset:6px}
+.spa-blog{position:relative;display:flex;flex-direction:column;gap:8px;text-decoration:none;background:rgba(255,255,255,.52);border:1px solid rgba(141,93,54,.35);padding:22px 25px;border-radius:22px;box-shadow:0 10px 35px #7c4c2c1a;transition:transform .2s,box-shadow .2s}.spa-blog:hover,.spa-blog:focus-visible{transform:translateY(-4px);box-shadow:0 15px 35px #7c4c2c33}.spa-blog-tag{font-size:.72rem;font-weight:700;letter-spacing:.16em;color:#935b33}.spa-blog strong{font:500 clamp(1.3rem,2vw,1.9rem) 'Playfair Display',Georgia,serif}.spa-blog>span:last-child{font-weight:700;font-size:.85rem}
+@media(max-width:850px){.spa-layout{grid-template-columns:1fr}.spa-photo{min-height:390px}.spa-content{padding:38px 25px 48px}.spa-content h1{font-size:clamp(2.8rem,9vw,4.8rem)}}
+@media(prefers-reduced-motion:reduce){.spa-photo img,.spa-primary,.spa-blog{transition:none}}
