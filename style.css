@@ -152,3 +152,55 @@ body.inner-luxury{--paper:#fbf6ef;--cream:#f5e7d7;--dark:#49301f;--olive:#956039
 .gallery-section .luxury-gallery>.luxury-photo img{width:100%;height:100%;object-fit:cover}
 @media(min-width:701px){.gallery-section .luxury-gallery>.luxury-feature{grid-column:span 2}}
 @media(max-width:700px){.gallery-section .luxury-gallery{grid-template-columns:minmax(0,1fr);grid-template-rows:none;grid-auto-rows:310px}.gallery-section .luxury-gallery>.luxury-photo,.gallery-section .luxury-gallery>.luxury-feature,.gallery-section .luxury-gallery>.luxury-portrait{grid-column:auto;grid-row:auto;height:100%}}
+
+
+/* Masáže Majka — chocolate brown + gold/cream color palette only.
+   Existing layout, photos, typography, spacing and interactions unchanged. */
+:root{--paper:#382115;--cream:#4a2b1b;--dark:#fff0d6;--olive:#d7aa63;--clay:#e9c287;--muted:#e5cfb1;--line:#86613f}
+body{background:#382115;color:#fff0d6}
+.header{background:#321c11;border-color:#80603f}
+.brand,.header nav a,.menu-toggle{color:#fff0d6}
+.nav-cta,.button{background:#d7aa63;color:#321c11!important;border-color:#d7aa63}
+.nav-cta:hover,.button:hover{background:#efcc8c;color:#321c11!important}
+.hero,.services,.home-links,.booking-section,.gallery-section,.contact-section,.section,.blog-card,.service-card,.service-card.featured,.home-link-grid a,.form-panel,.notice,.gallery-placeholder,.photo-frame{background-color:#422719;color:#fff0d6}
+.service-card,.blog-card,.home-link-grid a,.form-panel,.notice{border-color:#856040}
+.service-card.featured{background-color:#52311e}
+.hero-note,.lead,.muted,.section-head p,.service-card>p:not(.service-type),.source-note,.privacy,.gallery-placeholder small{color:#e5cfb1}
+.contact-section{background:#301a10;color:#fff0d6}
+.contact-grid p,.contact-section .contact-grid a{color:#f0d9b9}
+.contact-grid>div,.price-list div{border-color:#87613f}
+footer{background:#2b180e;color:#fff0d6}
+footer a,.social-links a,.social-icon{color:#f1d5a8}
+form input,form select,form textarea{background:#fff5e5;color:#392114;border-color:#b98b5a}
+form input::placeholder,form textarea::placeholder{color:#80654f}
+.hero-stamp{background:#4a2b1b;color:#fff0d6;border-color:#d7aa63}
+.home-links .home-link-grid a:hover{border-color:#e9c287}
+.blog-card p,.blog-article p{color:inherit}
+@media(max-width:700px){nav{background:#321c11}}
+
+/* Interior pages retain their existing decorative shapes and card geometry. */
+body.inner-luxury{--paper:#382115;--cream:#4a2b1b;--dark:#fff0d6;--olive:#d7aa63;--clay:#e9c287;--muted:#e5cfb1;--line:#86613f;background:#382115;color:#fff0d6}
+.inner-luxury .header{background:rgba(48,26,16,.97);border-color:#86613f}
+.inner-luxury .nav .brand,.inner-luxury nav a,.inner-luxury h1,.inner-luxury h2,.inner-luxury h3{color:#fff0d6}
+.inner-luxury main{background:radial-gradient(ellipse 75% 30% at 100% 8%,#85522f55,transparent 75%),radial-gradient(ellipse 65% 32% at 0% 68%,#9b633d33,transparent 78%),linear-gradient(150deg,#321b10 0%,#4a2b1b 55%,#382115 100%)}
+.inner-luxury main:before,.inner-luxury main:after{background:radial-gradient(ellipse at 30% 70%,transparent 45%,#b98b5a35 49%,transparent 55%),radial-gradient(ellipse at 75% 30%,transparent 40%,#a76c3f30 44%,transparent 53%),linear-gradient(170deg,transparent 35%,#c79a6c24 46%,transparent 57%)}
+.inner-luxury .service-card,.inner-luxury .blog-card,.inner-luxury .form-panel,.inner-luxury .contact-grid>div,.inner-luxury .contact-share,.inner-luxury .article-share{background:rgba(78,45,27,.94);border-color:#8d6847;color:#fff0d6}
+.inner-luxury .service-card.featured{background:rgba(95,56,34,.96)}
+.inner-luxury .service-card:hover,.inner-luxury .blog-card:hover{border-color:#e9c287}
+.inner-luxury .eyebrow,.inner-luxury .contact-label,.inner-luxury .service-type,.inner-luxury h1 i,.inner-luxury h2 i,.inner-luxury .underlink{color:#e9c287}
+.inner-luxury .nav-cta,.inner-luxury .button{background:#d7aa63;border-color:#d7aa63;color:#321c11!important}
+.inner-luxury .nav-cta:hover,.inner-luxury .button:hover{background:#efcc8c}
+.inner-luxury .contact-section,.inner-luxury .contact-section h2,.inner-luxury .contact-grid p,.inner-luxury .contact-grid a{color:#fff0d6}
+.inner-luxury .contact-grid .button{color:#321c11!important}
+.inner-luxury .notice{background:#56341f;border-left-color:#d7aa63}
+.inner-luxury form input,.inner-luxury form select,.inner-luxury form textarea{background:#fff5e5;color:#392114;border-color:#b98b5a}
+.inner-luxury footer,.inner-luxury ~ footer{background:#2b180e;color:#fff0d6}
+@media(max-width:700px){.inner-luxury .header nav{background:#321c11}}
+
+/* Homepage: retain the approved full-bleed image and all its positioning. */
+.home-fullbleed .header{background:rgba(48,26,16,.87)}
+.home-fullbleed .header a,.home-fullbleed .header .brand{color:#fff0d6}
+.home-fullbleed .spa-primary{background:#d7aa63;color:#321c11!important}
+.home-fullbleed .spa-secondary{color:#fff0d6}
+.home-fullbleed .spa-blog{background:rgba(69,39,23,.91);color:#fff0d6}
+.home-fullbleed .spa-blog-link{color:#f2c985}
