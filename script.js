@@ -39,7 +39,7 @@ async function refreshTimes(){
     : (isEn?'Availability could not be verified. Times are indicative; Majka must confirm.':'Dostupnosť sa nepodarilo overiť. Časy sú orientačné a musí ich potvrdiť Majka.');
   if(verified&&slots.length===0&&$('timeSummary'))$('timeSummary').textContent=isEn?'No available time for this date and treatment.':'Na tento dátum a masáž nie je voľný termín.';
   for(const label of slots){
-    if(!/^\\d{2}:\\d{2}$/.test(label))continue;
+    if(!/^[0-9]{2}:[0-9]{2}$/.test(label))continue;
     time.add(new Option(label,label));
     const b=document.createElement('button');
     b.type='button';b.className='time-slot';b.textContent=label;b.setAttribute('aria-pressed','false');
