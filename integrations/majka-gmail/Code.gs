@@ -1,148 +1,70 @@
 /**
- * Masáže Majka — Gmail automation (staging).
- * Runs ONLY in the Google account of majahulmanova@gmail.com.
- * No public web endpoint is exposed in this file.
- * Timezone: Europe/Bratislava.
+ * Masáže Majka — Gmail delivery bridge, staging.
+ * Supabase is the ONLY bookings database. This script never stores bookings.
+ * Run from the Majka Google account after approving permissions.
+ *
+ * Script Properties (private, never commit):
+ *   MAJKA_SHARED_SECRET = random 32+ character high-entropy secret
+ *
+ * Deploy as Web App: execute as Majka, access Anyone, ONLY after the
+ * signed Supabase dispatcher is configured. Unauthenticated requests
+ * cannot send emails; signed messages expire after 5 minutes.
  */
-const CONFIG = Object.freeze({
-  owner: 'majahulmanova@gmail.com',
-  zone: 'Europe/Bratislava',
-  tab: 'Rezervacie',
-  headers: ['id','createdAt','date','time','duration','service','priceEur','name','email','phone','note','status','paymentStatus','reminderSentAt','confirmationSentAt','cancelSentAt'],
-  statuses: ['REQUESTED','CONFIRMED','CANCELLED'],
-});
-
-function setupMajka() {
-  if (Session.getEffectiveUser().getEmail().toLowerCase() !== CONFIG.owner) {
-    throw new Error('Spustite v Google účte Majky: ' + CONFIG.owner);
-  }
-  let id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-  const ss = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.create('Masáže Majka – rezervácie');
-  if (!id) PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', ss.getId());
-  let sheet = ss.getSheetByName(CONFIG.tab);
-  if (!sheet) sheet = ss.insertSheet(CONFIG.tab);
-  if (sheet.getLastRow() === 0) sheet.appendRow(CONFIG.headers);
-  sheet.setFrozenRows(1);
-  const triggers = ScriptApp.getProjectTriggers();
-  for (const t of triggers) {
-    if (['sendTomorrowReminders','sendDailySummary'].includes(t.getHandlerFunction())) ScriptApp.deleteTrigger(t);
-  }
-  ScriptApp.newTrigger('sendTomorrowReminders').timeBased().everyDays(1).atHour(8).inTimezone(CONFIG.zone).create();
-  // Google time-based triggers run approximately within the specified hour.
-  ScriptApp.newTrigger('sendDailySummary').timeBased().everyDays(1).atHour(21).inTimezone(CONFIG.zone).create();
-  Logger.log('Spreadsheet: ' + ss.getUrl());
+const MAJKA = Object.freeze({owner:'majahulmanova@gmail.com',maxBody:6000,maxSubject:180});
+function setupMajkaMailer() {
+  const current=Session.getEffectiveUser().getEmail().toLowerCase();
+  if(current!==MAJKA.owner)throw new Error('Projekt musí autorizovať účet '+MAJKA.owner);
+  const secret=PropertiesService.getScriptProperties().getProperty('MAJKA_SHARED_SECRET');
+  if(!secret||secret.length<32)throw new Error('Najprv v Script Properties nastavte bezpečný MAJKA_SHARED_SECRET (min. 32 znakov).');
+  Logger.log('Majka Gmail mailer pripravený. Tajný kľúč nezapisovať do logov.');
 }
-
-function bookingSheet_() {
-  const id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-  if (!id) throw new Error('Najprv spustite setupMajka.');
-  return SpreadsheetApp.openById(id).getSheetByName(CONFIG.tab);
+function sendMajkaTestEmail() {
+  setupMajkaMailer();
+  MailApp.sendEmail({to:MAJKA.owner,subject:'TEST – Masáže Majka',body:'Test autorizácie Gmailu. Toto nie je zákaznícka rezervácia.',name:'Masáže Majka',replyTo:MAJKA.owner});
 }
-function rows_() {
-  const s=bookingSheet_(), values=s.getDataRange().getValues();
-  return values.slice(1).filter(r=>r[0]).map((r,i)=>Object.fromEntries(CONFIG.headers.map((h,j)=>[h,r[j]]).concat([['_row',i+2]])));
+function base64url_(bytes){return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/,'');}
+function equalSafe_(a,b){
+  if(typeof a!=='string'||typeof b!=='string')return false;
+  let diff=a.length^b.length;
+  for(let i=0;i<Math.max(a.length,b.length);i++)diff|=(a.charCodeAt(i)||0)^(b.charCodeAt(i)||0);
+  return diff===0;
 }
-function localDate_(value) {
-  if (Object.prototype.toString.call(value)==='[object Date]') return Utilities.formatDate(value,CONFIG.zone,'yyyy-MM-dd');
-  return String(value).slice(0,10);
-}
-function mail_(to, subject, body) {
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(to))) throw new Error('Neplatná e-mailová adresa');
-  if (MailApp.getRemainingDailyQuota() < 1) throw new Error('Denný limit e-mailov je vyčerpaný');
-  MailApp.sendEmail({to,subject,body,name:'Masáže Majka',replyTo:CONFIG.owner});
-}
-function details_(b) {
-  return 'Masáž: '+b.service+'\nTermín: '+localDate_(b.date)+' o '+b.time+
-    '\nTrvanie: '+b.duration+' min\nCena: '+b.priceEur+' €\nReferenčné číslo: '+b.id;
-}
-function valid_(b) {
-  if(!b||!/^\d{4}-\d{2}-\d{2}$/.test(b.date)||!/^\d{2}:\d{2}$/.test(b.time)) throw new Error('Neplatný dátum alebo čas');
-  if(![30,45,60,90].includes(Number(b.duration))) throw new Error('Neplatné trvanie');
-  if(!b.name||!b.email||!b.service||!b.phone) throw new Error('Chýbajú údaje rezervácie');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)) throw new Error('Neplatný e-mail');
-  const d=new Date(b.date+'T12:00:00+01:00'), weekday=d.getUTCDay();
-  if(weekday===0||weekday===6) throw new Error('Víkend nie je dostupný');
-  const mins=Number(b.time.slice(0,2))*60+Number(b.time.slice(3));
-  if(mins<9*60||mins+Number(b.duration)>17*60+30||mins%30!==0) throw new Error('Čas mimo pracovnej doby');
-  const start=new Date();start.setHours(0,0,0,0);
-  if(d<start) throw new Error('Minulý dátum');
-}
-function overlaps_(a,b) {
-  const mins=t=>Number(t.slice(0,2))*60+Number(t.slice(3));
-  return localDate_(a.date)===localDate_(b.date)&&mins(a.time)<mins(b.time)+Number(b.duration)&&mins(b.time)<mins(a.time)+Number(a.duration);
-}
-/** Internal/admin-only test entry. Do not expose directly as doPost without auth and spam protection. */
-function createBookingInternal(b) {
-  valid_(b);
-  const lock=LockService.getScriptLock();lock.waitLock(20000);
+function reply_(obj){return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);}
+function doGet(){return reply_({ok:false,error:'POST only'});}
+function doPost(e) {
   try {
-    if(rows_().some(r=>r.status!=='CANCELLED'&&overlaps_(r,b))) throw new Error('Termín je obsadený');
-    const id=Utilities.getUuid(), now=new Date().toISOString();
-    bookingSheet_().appendRow([id,now,b.date,b.time,Number(b.duration),String(b.service).slice(0,120),Number(b.priceEur)||0,
-      String(b.name).slice(0,100),String(b.email).slice(0,120),String(b.phone).slice(0,30),
-      String(b.note||'').slice(0,500),'REQUESTED','UNPAID','','','']);
-    return id;
-  } finally {lock.releaseLock();}
-}
-function setCell_(row,key,val){bookingSheet_().getRange(row._row,CONFIG.headers.indexOf(key)+1).setValue(val);}
-function confirmBookingInternal(id) {
-  const lock=LockService.getScriptLock();lock.waitLock(20000);
-  try {
-    const b=rows_().find(r=>r.id===id);
-    if(!b||b.status!=='REQUESTED') throw new Error('Rezervácia neexistuje alebo nemá stav REQUESTED');
-    if(b.paymentStatus!=='PAID'&&b.paymentStatus!=='PAY_ON_SITE') throw new Error('Najprv overte platbu alebo povoľte platbu na mieste');
-    if(rows_().some(r=>r.id!==id&&r.status==='CONFIRMED'&&overlaps_(r,b))) throw new Error('Termín bol obsadený');
-    // Send first. On mail failure, reservation remains REQUESTED.
-    mail_(b.email,'Potvrdenie rezervácie – Masáže Majka',
-      'Dobrý deň,\n\npotvrdzujeme váš termín masáže.\n\n'+details_(b)+
-      '\n\nAk potrebujete termín zmeniť, kontaktujte nás na '+CONFIG.owner+'.\n\nMasáže Majka');
-    setCell_(b,'status','CONFIRMED');setCell_(b,'confirmationSentAt',new Date().toISOString());
-    mail_(CONFIG.owner,'Nová potvrdená rezervácia – '+b.date+' '+b.time,
-      'Zákazník: '+b.name+'\nE-mail: '+b.email+'\nTelefón: '+b.phone+'\n\n'+details_(b));
-  } finally {lock.releaseLock();}
-}
-function cancelBookingInternal(id) {
-  const lock=LockService.getScriptLock();lock.waitLock(20000);
-  try {
-    const b=rows_().find(r=>r.id===id);
-    if(!b||b.status==='CANCELLED') throw new Error('Rezervácia nenájdená alebo už zrušená');
-    setCell_(b,'status','CANCELLED');
-    // Cancellation is recorded even if notification fails; next manual retry can use the log.
-    mail_(b.email,'Zrušenie termínu – Masáže Majka',
-      'Dobrý deň,\n\nváš termín bol zrušený.\n\n'+details_(b)+
-      '\n\nAk bola zaplatená záloha, jej vysporiadanie sa riadi podmienkami rezervácie a platnými právnymi predpismi.\n\nMasáže Majka');
-    setCell_(b,'cancelSentAt',new Date().toISOString());
-    mail_(CONFIG.owner,'Zrušená rezervácia – '+b.date+' '+b.time,'Zrušenie: '+b.name+'\n'+details_(b));
-  } finally {lock.releaseLock();}
-}
-function sendTomorrowReminders() {
-  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
-  const target=Utilities.formatDate(tomorrow,CONFIG.zone,'yyyy-MM-dd');
-  for(const b of rows_()) {
-    if(b.status!=='CONFIRMED'||localDate_(b.date)!==target||b.reminderSentAt) continue;
-    mail_(b.email,'Pripomienka masáže zajtra – Masáže Majka',
-      'Dobrý deň,\n\npripomíname vám zajtrajšiu masáž.\n\n'+details_(b)+
-      '\n\nTešíme sa na vás!\nMasáže Majka');
-    setCell_(b,'reminderSentAt',new Date().toISOString());
+    const raw=e&&e.postData&&e.postData.contents;
+    if(!raw||raw.length>10000)throw new Error('Invalid payload');
+    const p=JSON.parse(raw);
+    const timestamp=Number(p.timestamp);
+    const nonce=String(p.nonce||'');
+    const to=String(p.to||'').trim();
+    const subject=String(p.subject||'').trim();
+    const body=String(p.body||'');
+    const signature=String(p.signature||'');
+    if(!Number.isInteger(timestamp)||Math.abs(Date.now()-timestamp)>300000)throw new Error('Expired request');
+    if(!/^[a-f0-9-]{30,50}$/i.test(nonce))throw new Error('Invalid nonce');
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)||to.length>150)throw new Error('Invalid address');
+    if(subject.length<1||subject.length>MAJKA.maxSubject||body.length<1||body.length>MAJKA.maxBody)throw new Error('Invalid message');
+    const secret=PropertiesService.getScriptProperties().getProperty('MAJKA_SHARED_SECRET');
+    if(!secret||secret.length<32)throw new Error('Not configured');
+    const canonical=[timestamp,nonce,to,subject,body].join('\n');
+    const expected=base64url_(Utilities.computeHmacSha256Signature(canonical,secret));
+    if(!equalSafe_(expected,signature))throw new Error('Unauthorised');
+    const cache=CacheService.getScriptCache();
+    const key='nonce-'+nonce;
+    const lock=LockService.getScriptLock();lock.waitLock(10000);
+    try {
+      if(cache.get(key))throw new Error('Duplicate request');
+      cache.put(key,'used',360);
+    } finally {lock.releaseLock();}
+    if(MailApp.getRemainingDailyQuota()<1)throw new Error('Gmail quota exhausted');
+    MailApp.sendEmail({to,subject,body,name:'Masáže Majka',replyTo:MAJKA.owner});
+    return reply_({ok:true});
+  } catch(err) {
+    // Apps Script ContentService returns HTTP 200 even for application errors.
+    // The Supabase dispatcher MUST inspect body.ok, never status alone.
+    console.error('Mailer request failed: '+String(err&&err.message||err));
+    return reply_({ok:false,error:'Delivery rejected'});
   }
-}
-function sendDailySummary() {
-  const date=Utilities.formatDate(new Date(),CONFIG.zone,'yyyy-MM-dd');
-  const items=rows_().filter(b=>localDate_(b.date)===date);
-  const lines=items.map(b=>b.time+' | '+b.name+' | '+b.service+' | '+b.status+' | '+b.paymentStatus);
-  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
-  const next=Utilities.formatDate(tomorrow,CONFIG.zone,'yyyy-MM-dd');
-  const nextCount=rows_().filter(b=>localDate_(b.date)===next&&b.status!=='CANCELLED').length;
-  mail_(CONFIG.owner,'Denný prehľad rezervácií – '+date,
-    'Masáže Majka – '+date+'\n\nDnešné termíny: '+items.length+'\n'+(lines.join('\n')||'Žiadne.')+
-    '\n\nZajtrajšie aktívne termíny: '+nextCount+'\n\nAutomatický prehľad.');
-}
-/** Manual smoke test: creates a future REQUESTED booking, sends no client email. */
-function testBookingInternal() {
-  const d=new Date();d.setDate(d.getDate()+7);
-  while([0,6].includes(d.getDay())) d.setDate(d.getDate()+1);
-  const date=Utilities.formatDate(d,CONFIG.zone,'yyyy-MM-dd');
-  const id=createBookingInternal({date,time:'09:00',duration:30,service:'TEST – klasická masáž',priceEur:20,
-    name:'TEST REZERVÁCIA',email:CONFIG.owner,phone:'TEST',note:'Test – vymazať po kontrole'});
-  Logger.log('Test booking id: '+id);
 }
