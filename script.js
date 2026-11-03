@@ -8,7 +8,7 @@ async function refreshTimes(){
   if(!selected||!date.value)return;
   const chosen=new Date(date.value+'T00:00:00');
   if(Number.isNaN(chosen.getTime())||chosen.getDay()===0||chosen.getDay()===6||chosen<startDay||chosen>maxDay)return;
-  const match=selected.match(/(\\d+) minút/);
+  const match=selected.match(/([0-9]+) minút/);
   const duration=match?Number(match[1]):30;
   const serviceId=service.selectedIndex; // Matches the ordered Majka services table (1–7).
   if($('timeSummary'))$('timeSummary').textContent=document.documentElement.lang==='en'?'Checking available times…':'Overujem voľné termíny…';
