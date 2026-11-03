@@ -95,3 +95,52 @@
 .home-fullbleed .spa-blog-link{font-weight:800;color:#85502e}
 .home-fullbleed .spa-primary:focus-visible,.home-fullbleed .spa-secondary:focus-visible,.home-fullbleed .spa-blog:focus-visible,.home-fullbleed .header a:focus-visible,.home-fullbleed .menu-toggle:focus-visible{outline:3px solid #ffcf91;outline-offset:4px}
 @media(max-width:700px){.home-fullbleed .header .menu-toggle{color:white;background:rgba(50,30,18,.65);border-color:#e7c8a6}.home-fullbleed .header nav{top:70px;background:rgba(51,35,25,.98);color:white}.home-fullbleed .spa-landing{background-position:43% center}.home-fullbleed .spa-landing:before{background:linear-gradient(180deg,rgba(25,17,12,.72),rgba(33,21,15,.64) 58%,rgba(32,21,16,.76))}.home-fullbleed .spa-content{width:calc(100% - 34px);padding:112px 0 32px;gap:24px}.home-fullbleed .spa-content h1{font-size:clamp(2.7rem,12vw,4.4rem)}.home-fullbleed .spa-actions{gap:13px}.home-fullbleed .spa-blog{align-self:stretch}.home-fullbleed .spa-benefits{font-size:.9rem}}
+
+
+/* Luxury spa interior pages: deliberately scoped to preserve approved homepage */
+body.inner-luxury{--paper:#fbf6ef;--cream:#f5e7d7;--dark:#49301f;--olive:#956039;--clay:#b97d4d;--muted:#765c49;--line:#e7d4bd;background:#fbf6ef;color:#49301f;overflow-x:clip}
+.inner-luxury .header{background:rgba(255,249,241,.95);border-bottom:1px solid #e7d4bd;backdrop-filter:blur(14px)}
+.inner-luxury .nav .brand{color:#4b2b1b}.inner-luxury nav a{color:#4b2b1b}.inner-luxury .nav-cta,.inner-luxury .button{background:linear-gradient(120deg,#a96b39,#865020);border:1px solid #a87544;color:#fff!important;border-radius:999px;box-shadow:0 9px 22px #85512822;transition:transform .22s,box-shadow .22s}
+.inner-luxury .nav-cta:hover,.inner-luxury .button:hover{transform:translateY(-3px);box-shadow:0 14px 25px #85512833}
+.inner-luxury .section{position:relative;isolation:isolate;background:transparent;min-height:0}
+.inner-luxury main{position:relative;isolation:isolate;overflow:hidden;min-height:62vh;background:radial-gradient(ellipse 75% 30% at 100% 8%,#e9c6a066,transparent 75%),radial-gradient(ellipse 65% 32% at 0% 68%,#dfb68a44,transparent 78%),linear-gradient(150deg,#fffaf4 0%,#f9eee1 55%,#fff9f2 100%)}
+.inner-luxury main:before,.inner-luxury main:after{content:"";position:absolute;z-index:-1;pointer-events:none;width:110%;height:300px;left:-5%;opacity:.52;filter:blur(18px);border-radius:50%;transform:rotate(-9deg);background:radial-gradient(ellipse at 30% 70%,transparent 45%,#d6a77335 49%,transparent 55%),radial-gradient(ellipse at 75% 30%,transparent 40%,#c38b5530 44%,transparent 53%),linear-gradient(170deg,transparent 35%,#c79a6c24 46%,transparent 57%)}
+.inner-luxury main:before{top:2%}.inner-luxury main:after{bottom:0;transform:rotate(12deg) scaleX(-1)}
+.inner-luxury main .wrap{position:relative;z-index:1}
+.inner-luxury h1,.inner-luxury h2,.inner-luxury h3{color:#4b2b1b}
+.inner-luxury h1{font-size:clamp(2.6rem,5vw,5.2rem)}
+.inner-luxury h1 i,.inner-luxury h2 i{color:#a5693b}
+.inner-luxury .eyebrow,.inner-luxury .contact-label,.inner-luxury .service-type{color:#9b653c}
+.inner-luxury .service-grid,.inner-luxury .blog-grid{gap:22px}
+.inner-luxury .service-card,.inner-luxury .blog-card,.inner-luxury .form-panel,.inner-luxury .contact-grid>div,.inner-luxury .contact-share,.inner-luxury .article-share{background:rgba(255,251,246,.86);border:1px solid #e7d1b8;border-radius:22px;box-shadow:0 18px 45px #956b4220;backdrop-filter:blur(7px)}
+.inner-luxury .service-card,.inner-luxury .blog-card{transition:transform .25s,box-shadow .25s,border-color .25s}
+.inner-luxury .service-card:hover,.inner-luxury .blog-card:hover{transform:translateY(-5px);border-color:#c99a6c;box-shadow:0 22px 48px #956b4230}
+.inner-luxury .service-card.featured{background:rgba(249,232,211,.94)}
+.inner-luxury .price-list div{border-color:#e4d2bd}
+.inner-luxury .underlink{color:#87512e;text-underline-offset:5px}
+.inner-luxury .photo-frame,.inner-luxury .luxury-photo{border-radius:24px;box-shadow:0 20px 55px #81532e33;overflow:hidden}
+.inner-luxury .photo-frame img,.inner-luxury .luxury-photo img,.inner-luxury .blog-card-image{transition:transform .5s ease}
+.inner-luxury .luxury-photo:hover img,.inner-luxury .photo-frame:hover img,.inner-luxury .blog-card:hover img{transform:scale(1.035)}
+.inner-luxury .contact-section{color:#49301f}
+.inner-luxury .contact-section h2 i{color:#a5693b}
+.inner-luxury .contact-section .eyebrow,.inner-luxury .contact-section .contact-label{color:#9b653c}
+.inner-luxury .contact-grid{gap:20px}
+.inner-luxury .contact-grid>div{padding:26px;min-width:0;border-top:1px solid #e7d1b8}
+.inner-luxury .contact-grid p,.inner-luxury .contact-grid a{color:#644a35}
+.inner-luxury .contact-grid .button{color:white}
+.inner-luxury .contact-grid h3{overflow-wrap:anywhere}
+.inner-luxury .contact-share{padding:28px}
+.inner-luxury .booking-grid{align-items:start}
+.inner-luxury .form-panel{padding:clamp(20px,3vw,38px)}
+.inner-luxury .notice{background:#fff4e5;border-left-color:#a56b3f}
+.inner-luxury form input,.inner-luxury form select,.inner-luxury form textarea{border-radius:10px;border-color:#d8bfa5;background:#fffdfa}
+.inner-luxury footer,.inner-luxury ~ footer{background:#f5e9dc}
+.inner-luxury a:focus-visible,.inner-luxury button:focus-visible,.inner-luxury input:focus-visible,.inner-luxury select:focus-visible{outline:3px solid #a66c3c;outline-offset:3px}
+.inner-luxury .gallery-lightbox-trigger{display:block;width:100%;padding:0;border:0;background:transparent;cursor:zoom-in;text-align:inherit}
+.inner-luxury .gallery-lightbox-trigger img{width:100%;display:block}
+.gallery-lightbox{position:fixed;inset:0;z-index:200;background:rgba(27,18,12,.91);display:flex;align-items:center;justify-content:center;padding:60px 24px 24px}
+.gallery-lightbox[hidden]{display:none}
+.gallery-lightbox img{max-width:min(100%,1200px);max-height:calc(100vh - 95px);object-fit:contain;border-radius:12px}
+.gallery-lightbox button{position:absolute;top:12px;right:20px;border:1px solid #e7c7a6;background:#4d2c1b;color:white;border-radius:50%;font-size:30px;width:48px;height:48px;cursor:pointer}
+@media(max-width:700px){.inner-luxury .header nav{background:#fff7ec}.inner-luxury .contact-grid{grid-template-columns:1fr}.inner-luxury .service-card,.inner-luxury .blog-card{border-radius:16px}.inner-luxury .contact-grid>div{padding:22px}.inner-luxury .form-panel{padding:20px}.inner-luxury .section{padding:62px 0}}
+@media(prefers-reduced-motion:reduce){.inner-luxury .service-card,.inner-luxury .blog-card,.inner-luxury .luxury-photo img,.inner-luxury .photo-frame img,.inner-luxury .blog-card-image,.inner-luxury .button{transition:none}}
