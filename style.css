@@ -236,3 +236,9 @@ body.inner-luxury{--paper:#382115;--cream:#4a2b1b;--dark:#fff0d6;--olive:#d7aa63
 .inner-luxury .form-panel .payment-choice p{margin:6px 0}
 .inner-luxury .booking-details-column .notice{padding:10px 12px;font-size:.82rem}
 @media(max-width:780px){.inner-luxury .booking-grid>div:first-child{display:block}.inner-luxury .booking-grid>div:first-child .notice{margin:10px 0}.inner-luxury .booking-grid>div:first-child .opening-mini{flex-wrap:wrap}.inner-luxury .booking-layout{grid-template-columns:1fr;gap:12px}.inner-luxury .booking-section{padding:20px 0 36px}.inner-luxury .form-panel{padding:16px}.inner-luxury .time-slots{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* Visible month and year for the booking calendar. */
+.inner-luxury .calendar-toolbar strong{color:#382115!important;text-align:center;font-weight:700;letter-spacing:.01em}
+.inner-luxury .calendar-toolbar{gap:12px}
+.inner-luxury .calendar-toolbar button{flex:0 0 38px}
+@media(max-width:480px){.inner-luxury .calendar-toolbar strong{font-size:1.17rem}}
