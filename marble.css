@@ -304,3 +304,11 @@ body.inner-luxury .skip:focus {
   color: #fff3dc;
   border: 1px solid #b48a56;
 }
+/* Older article-local styles must not reintroduce pale sharing blocks. */
+body.inner-luxury .article-share { background: var(--chocolate-surface) !important; }
+body.inner-luxury .marble-reading-panel .article-share .share-actions > a,
+body.inner-luxury .marble-reading-panel .article-share .share-actions > button {
+  background: var(--chocolate-surface) !important;
+  color: #fff3dc !important;
+  border-color: #b48a56 !important;
+}
