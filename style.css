@@ -266,3 +266,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #d7aa63;outline-offset:4p
 .gallery-intro>p:last-child{color:inherit}.about-english .photo-frame{max-width:420px}.about-english .photo-frame img{display:block;width:100%;height:auto;object-fit:contain}.inner-luxury .time-slot:disabled{opacity:.45;cursor:not-allowed;text-decoration:line-through}.legal-copy{max-width:900px}.legal-copy h2{font-size:clamp(1.6rem,3vw,2.4rem);margin-top:1.5em}.video-placeholder{height:auto}
 
 .contact-form-panel{max-width:720px;margin:auto}.contact-form-panel h2{font-size:2.4rem;margin-bottom:15px}.blog-cover{height:auto;object-fit:contain}.blog-card-image{height:auto;aspect-ratio:auto;object-fit:contain}
+
+html[lang=en] .time-slots:empty:before{content:'Choose a treatment and date'}
+
+.service-card h2.service-heading{font-size:1.7rem;line-height:1.18;margin:16px 0;letter-spacing:normal}.inner-luxury .form-panel h2.form-heading{font-size:1.3rem;margin:0 0 8px;letter-spacing:normal}

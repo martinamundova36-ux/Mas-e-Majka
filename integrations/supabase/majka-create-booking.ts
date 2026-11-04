@@ -14,7 +14,7 @@ Deno.serve(async req=>{
   const name=String(body.name||"").trim(),email=String(body.email||"").trim(),phone=String(body.phone||"").trim(),note=String(body.note||"").trim();
   if(name.length<2||name.length>100||!/^\S+@\S+\.\S+$/.test(email)||email.length>120||phone.length<7||phone.length>30||note.length>500)return json({error:"Invalid contact details"},400);
   const day=String(body.date||""),clock=String(body.time||""),serviceId=Number(body.service_id);
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!/^\d{2}:\d{2}$/.test(clock)||!Number.isInteger(serviceId))return json({error:"Invalid appointment"},400);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(clock)||!Number.isInteger(serviceId))return json({error:"Invalid appointment"},400);
   const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false}});
   const {data:service,error:se}=await db.from("majka_services").select("id,duration_minutes").eq("id",serviceId).eq("active",true).maybeSingle();
   if(se||!service)return json({error:"Unknown service"},400);
