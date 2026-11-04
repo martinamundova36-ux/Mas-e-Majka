@@ -1,0 +1,107 @@
+/* Responsive corrections following the supplied Android screenshot. */
+.inner-luxury .photo-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+.inner-luxury .about-photo-layout .photo-frame {
+  width: 100%;
+  max-width: 420px;
+  margin-inline: auto;
+}
+.inner-luxury :is(.intro-grid,.booking-layout,.form-row) > div { min-width: 0; }
+.inner-luxury .payment-choice { min-inline-size: 0; }
+
+@media (max-width: 1100px) {
+  .header .nav { min-height: 70px; gap: 12px; }
+  .header .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    padding: 6px;
+    font-size: 1.4rem;
+    color: #fff3dc;
+    border: 1px solid #b9925e;
+    border-radius: 8px;
+    background: url("images/chocolate-marble-mobile.webp") center / cover no-repeat;
+  }
+  .inner-luxury .header nav,
+  .home-fullbleed .header nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: 12px 16px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    max-height: calc(100vh - 74px);
+    max-height: calc(100dvh - 74px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-bottom: 1px solid #b9925e;
+    box-shadow: 0 15px 25px #160b0766;
+    background: linear-gradient(#170b0426,#170b0433),
+      url("images/chocolate-marble-mobile.webp") center / cover no-repeat;
+  }
+  .inner-luxury .header nav.open,
+  .home-fullbleed .header nav.open { display: flex; }
+  .header nav > a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+  .header nav .language-switch { margin: 4px 0 0; padding: 4px 14px; }
+  .header nav .language-switch a { display: inline-flex; align-items: center; min-height: 44px; padding: 6px 12px; }
+}
+
+@media (max-width: 700px) {
+  .header .wrap { width: calc(100% - 32px); }
+  .header .brand { font-size: clamp(1.24rem, 5.8vw, 1.6rem); }
+  .header .flower { font-size: 1em; margin-right: 6px; }
+  .inner-luxury .intro.section { padding: 30px 0 40px; }
+  .inner-luxury .about-photo-layout { gap: 24px; }
+  .inner-luxury .about-photo-layout .photo-frame,
+  .inner-luxury .about-english .photo-frame {
+    width: min(230px, 68vw);
+    max-width: 100%;
+    margin: 0 auto 20px;
+  }
+  .inner-luxury .photo-frame img { max-height: 290px; }
+  .inner-luxury .photo-frame figcaption { padding: 10px 12px; line-height: 1.5; }
+  .inner-luxury .about-photo-layout h1 { font-size: clamp(2.1rem, 9vw, 3rem); }
+  .inner-luxury .about-photo-layout > div:last-child { padding: 22px; }
+  .inner-luxury :is(.contact-grid,.marble-reading-panel,.contact-form-panel) { overflow-wrap: anywhere; }
+  .inner-luxury form :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea) { font-size: 16px; min-height: 44px; }
+  .inner-luxury form textarea { min-height: 100px; }
+  .inner-luxury .calendar-day { min-height: 38px; }
+  .inner-luxury .time-slot { min-height: 44px; font-size: .9rem; }
+  .inner-luxury .calendar-toolbar button { min-width: 44px; min-height: 44px; }
+  .inner-luxury .button,
+  .home-fullbleed .spa-primary { min-height: 44px; white-space: normal; text-align: center; }
+  .inner-luxury .gallery-lightbox { padding: 64px 12px 16px; }
+  .inner-luxury .gallery-lightbox img { max-width: 100%; max-height: calc(100dvh - 90px); }
+  .inner-luxury .gallery-lightbox button { right: 12px; }
+  .inner-luxury footer .footer-grid { gap: 16px; }
+  .inner-luxury footer .site-credit { display: block; margin-top: 6px; }
+}
+
+@media (max-width: 480px) {
+  .inner-luxury .form-row { grid-template-columns: minmax(0, 1fr); }
+  .inner-luxury .booking-calendar { padding: 10px; }
+  .inner-luxury .calendar-days,
+  .inner-luxury .calendar-weekdays { gap: 3px; }
+}
+
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .inner-luxury .photo-frame:hover img { transform: none; }
+}
