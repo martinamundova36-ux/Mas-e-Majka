@@ -154,3 +154,37 @@ body.inner-luxury::before {
 }
 .inner-luxury .payment-choice label{display:flex;align-items:center;gap:10px}
 .inner-luxury .payment-choice input[type=radio]{width:auto;flex:0 0 auto;margin:0}
+
+/* Every remaining brown UI surface uses visible stone, not an opaque tint. */
+.inner-luxury .header {
+  background: linear-gradient(#170b0414,#170b0426),
+    url("images/chocolate-marble.webp") center 6% / cover no-repeat;
+}
+.inner-luxury footer {
+  background: linear-gradient(#170b0414,#170b0426),
+    url("images/chocolate-marble.webp") center 87% / cover no-repeat;
+}
+.inner-luxury .cookie-panel,
+.inner-luxury .gallery-lightbox button,
+.inner-luxury .calendar-day.selected,
+.inner-luxury .time-slot.selected {
+  background: linear-gradient(#170b0414,#170b0426),
+    url("images/chocolate-marble-mobile.webp") 30% 68% / cover no-repeat;
+  color: #fff3dc;
+  border-color: #d0a366;
+}
+.inner-luxury .cookie-panel :is(strong,p,label) { color: #fff3dc; }
+.inner-luxury .gallery-lightbox {
+  background: linear-gradient(#1208038c,#120803a6),
+    url("images/chocolate-marble.webp") center / cover no-repeat;
+}
+.inner-luxury .cookie-actions button:not(.cookie-primary),
+.inner-luxury .cookie-options button:not(.cookie-primary) {
+  background: url("images/chocolate-marble-mobile.webp") center / cover no-repeat;
+}
+@media(max-width:700px) {
+  .inner-luxury .header nav {
+    background: linear-gradient(#170b0426,#170b0433),
+      url("images/chocolate-marble-mobile.webp") center / cover no-repeat;
+  }
+}
