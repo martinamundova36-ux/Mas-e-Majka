@@ -20,7 +20,7 @@ Deno.serve(async req=>{
   if(se||!service)return json({error:"Unknown service"},400);
   const date=new Date(day+"T12:00:00Z");if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)!==day)return json({error:"Invalid date"},400);
   const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Bratislava",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-  const max=new Date(today+"T12:00:00Z");max.setUTCDate(max.getUTCDate()+365);
+  const max=new Date(today+"T12:00:00Z");const targetDay=max.getUTCDate();max.setUTCMonth(max.getUTCMonth()+2,0);max.setUTCDate(Math.min(targetDay,max.getUTCDate()));
   if(day<today||day>max.toISOString().slice(0,10))return json({error:"Date unavailable"},409);
   const weekday=(date.getUTCDay()+6)%7+1;
   const {data:hours,error:he}=await db.from("majka_working_hours").select("opens_at,closes_at,enabled").eq("weekday",weekday).single();

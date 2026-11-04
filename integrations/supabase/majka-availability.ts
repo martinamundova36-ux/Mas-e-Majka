@@ -14,12 +14,12 @@ Deno.serve(async req=>{
   const d=new Date(day+"T12:00:00Z");
   if(!Number.isFinite(d.getTime())||d.toISOString().slice(0,10)!==day)return respond({error:"Invalid date"},400);
   const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Bratislava",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-  const limit=new Date(today+"T12:00:00Z");limit.setUTCDate(limit.getUTCDate()+365);
+  const limit=new Date(today+"T12:00:00Z");const targetDay=limit.getUTCDate();limit.setUTCMonth(limit.getUTCMonth()+2,0);limit.setUTCDate(Math.min(targetDay,limit.getUTCDate()));
   if(day<today||day>limit.toISOString().slice(0,10))return respond({services,slots:[],configured:false});
   const weekday=(d.getUTCDay()+6)%7+1;
   const {data:hours,error:he}=await db.from("majka_working_hours").select("opens_at,closes_at,enabled").eq("weekday",weekday).single();
   if(he)throw he;
-  if(!hours.enabled)return respond({services,slots:[],configured:false,message:"Working hours not yet configured"});
+  if(!hours.enabled)return respond({services,slots:[],configured:true});
   const id=Number(u.searchParams.get("service_id")),svc=services?.find(x=>x.id===id);
   if(!svc)return respond({services,slots:[],configured:true});
   const offsetParts=new Intl.DateTimeFormat("en-US",{timeZone:"Europe/Bratislava",timeZoneName:"shortOffset"}).formatToParts(d);
@@ -35,7 +35,7 @@ Deno.serve(async req=>{
   const slots:string[]=[];
   for(let t=mins(hours.opens_at);t+svc.duration_minutes<=mins(hours.closes_at);t+=30){
    const start=dayStart+t*60000,end=start+svc.duration_minutes*60000;
-   if(start<=Date.now())continue;
+   if(start<Date.now()+3600000)continue;
    if([...(busy||[]),...(blocks||[])].some(x=>Date.parse(x.starts_at)<end&&Date.parse(x.ends_at)>start))continue;
    slots.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));
   }
