@@ -1,0 +1,154 @@
+/* Approved chocolate marble finish. Loaded only by interior SK/EN pages. */
+body.inner-luxury {
+  --marble-ivory: #fff3dc;
+  --marble-ink: #38251b;
+  --marble-muted: #675141;
+  --marble-bronze: #a77a46;
+  --marble-gold: #e5bd77;
+  background: #26170f;
+  color: var(--marble-ivory);
+  isolation: isolate;
+}
+body.inner-luxury::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(120deg, #170b0440, #29160b12 55%, #12080338),
+    url("images/chocolate-marble.webp") center / cover no-repeat;
+}
+.inner-luxury main,
+.inner-luxury main .section,
+.inner-luxury .contact-section,
+.inner-luxury .services {
+  background: transparent;
+}
+.inner-luxury main::before,
+.inner-luxury main::after { content: none; }
+.inner-luxury .header {
+  background: linear-gradient(#1a0e09a8, #1a0e09b8),
+    url("images/chocolate-marble.webp") center 15% / cover no-repeat;
+  border-bottom: 1px solid #c495566e;
+  box-shadow: 0 8px 28px #12070245;
+}
+.inner-luxury .header .brand,
+.inner-luxury nav a { color: var(--marble-ivory); }
+.inner-luxury h1,
+.inner-luxury h2,
+.inner-luxury h3 { color: var(--marble-ivory); }
+.inner-luxury h1 i,
+.inner-luxury h2 i,
+.inner-luxury .eyebrow { color: var(--marble-gold); }
+.inner-luxury .nav-cta,
+.inner-luxury .button {
+  background: linear-gradient(145deg, #f0cf90, #d8aa61);
+  border: 1px solid #f4d79d;
+  box-shadow: inset 0 1px #fff2c499, 0 5px 14px #170a0640;
+  color: #382414 !important;
+}
+.inner-luxury .nav-cta:hover,
+.inner-luxury .button:hover { background: #f0ce8e; }
+.inner-luxury .gallery-section .luxury-photo,
+.inner-luxury .photo-frame,
+.inner-luxury .service-card,
+.inner-luxury .blog-card,
+.inner-luxury .form-panel,
+.inner-luxury .contact-grid > div,
+.inner-luxury .contact-share,
+.inner-luxury .marble-reading-panel,
+.inner-luxury .about-photo-layout > div:last-child {
+  background: linear-gradient(145deg, #fffdf7, #f7edde);
+  color: var(--marble-ink);
+  border: 1px solid #c19a65;
+  box-shadow: inset 0 1px #ffffffcc, 0 14px 34px #12070252, 0 2px 5px #12070230;
+}
+.inner-luxury .service-card,
+.inner-luxury .blog-card,
+.inner-luxury .contact-grid > div,
+.inner-luxury .marble-reading-panel,
+.inner-luxury .about-photo-layout > div:last-child { border-radius: 20px; }
+.inner-luxury .service-card.featured { background: linear-gradient(145deg, #fff8ea, #f1e0c9); }
+.inner-luxury .gallery-section .luxury-photo figcaption {
+  background: linear-gradient(145deg, #fffdf7, #f7edde);
+  color: var(--marble-ink);
+}
+.inner-luxury .gallery-section .luxury-photo figcaption span,
+.inner-luxury .photo-frame figcaption { color: var(--marble-muted); }
+.inner-luxury .gallery-section .gallery-lightbox-trigger { background: #fffdf7; }
+.inner-luxury .marble-reading-panel,
+.inner-luxury .about-photo-layout > div:last-child { padding: clamp(22px, 4vw, 46px); }
+.inner-luxury .contact-grid > div { padding: 24px; }
+.inner-luxury :is(.service-card,.blog-card,.form-panel,.contact-grid>div,.contact-share,.marble-reading-panel,.about-photo-layout>div:last-child)
+  :is(h1,h2,h3,p,li,legend,label,small,strong) { color: var(--marble-ink); }
+.inner-luxury :is(.service-card,.blog-card,.form-panel,.contact-grid>div,.contact-share,.marble-reading-panel,.about-photo-layout>div:last-child)
+  :is(.eyebrow,.service-type,.contact-label,.underlink,h1 i,h2 i) { color: #795129; }
+.inner-luxury :is(.service-card,.blog-card,.form-panel,.contact-grid>div,.contact-share,.marble-reading-panel,.about-photo-layout>div:last-child)
+  :is(.privacy,.source-note,.muted,.lead,.share-feedback,.time-summary,#formMessage,#chosenDate) { color: var(--marble-muted); }
+.inner-luxury :is(.contact-grid>div,.marble-reading-panel,.about-photo-layout>div:last-child) a:not(.button) { color: #68421f; }
+.inner-luxury .price-list div,
+.inner-luxury .payment-choice { border-color: #ceb08a; }
+.inner-luxury .notice {
+  background: #fcf3e3;
+  color: var(--marble-ink);
+  border-left-color: var(--marble-bronze);
+  border-radius: 0 10px 10px 0;
+}
+.inner-luxury .notice :is(strong,a,p) { color: var(--marble-ink); }
+.inner-luxury form :is(input,select,textarea) {
+  background: #fffdf9;
+  color: var(--marble-ink);
+  border-color: #b89972;
+  accent-color: #805a32;
+}
+.inner-luxury .booking-calendar { background: #f4e9d8; border-color: #c5a37a; }
+.inner-luxury :is(.calendar-help,.calendar-weekdays span,.time-summary,#chosenDate) { color: #675141; }
+.inner-luxury .calendar-day { background: #fffdf8; color: #38251b; border-color: #ccb79b; }
+.inner-luxury .calendar-day.selected,
+.inner-luxury .time-slot.selected { background: #79512e; border-color: #79512e; color: #fff8ed; }
+.inner-luxury .calendar-day.unavailable { background: #e7dfd4; color: #81786d; }
+.inner-luxury .calendar-day:hover:not(:disabled),
+.inner-luxury .time-slot:hover:not(:disabled) { background: #e7d3b5; color: #38251b; border-color: #9e774d; }
+.inner-luxury .time-slots:empty::before { color: #675141; }
+.inner-luxury .time-slot { color: #38251b; background: #fffdf8; border-color: #c5a37a; }
+.inner-luxury .article-share { background: #f3e7d6; border-color: #c8a779; color: #38251b; }
+.inner-luxury .contact-share > p { color: #675141; }
+.inner-luxury .gallery-bottom p { color: #f1dcc0; }
+.inner-luxury footer {
+  background: linear-gradient(#1a0d08cd, #1a0d08e6),
+    url("images/chocolate-marble.webp") center bottom / cover no-repeat;
+  border-top: 1px solid #bd925769;
+}
+.inner-luxury :is(a,button,input,select,textarea):focus-visible {
+  outline: 3px solid #b47a36;
+  outline-offset: 4px;
+}
+/* Progressive scroll polish: no script, no content hidden while loading. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .inner-luxury :is(.luxury-photo,.service-card,.blog-card) {
+      animation: marble-arrive linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+    @keyframes marble-arrive {
+      from { transform: translateY(8px); opacity: .9; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  }
+}
+@media (max-width: 700px) {
+  body.inner-luxury::before { background-image: linear-gradient(#170b0430,#170b0430),url("images/chocolate-marble-mobile.webp"); }
+  .inner-luxury .header nav {
+    background: linear-gradient(#21120bf0,#21120bf0),url("images/chocolate-marble-mobile.webp") center / cover no-repeat;
+  }
+  .inner-luxury .contact-grid > div { padding: 20px; }
+  .inner-luxury .marble-reading-panel { padding: 24px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .inner-luxury :is(.luxury-photo,.service-card,.blog-card,.button,.photo-frame img) {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
