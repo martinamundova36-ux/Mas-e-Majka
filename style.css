@@ -270,3 +270,5 @@ a:focus-visible,button:focus-visible{outline:3px solid #d7aa63;outline-offset:4p
 html[lang=en] .time-slots:empty:before{content:'Choose a treatment and date'}
 
 .service-card h2.service-heading{font-size:1.7rem;line-height:1.18;margin:16px 0;letter-spacing:normal}.inner-luxury .form-panel h2.form-heading{font-size:1.3rem;margin:0 0 8px;letter-spacing:normal}
+
+.contact-grid h2.contact-heading,.contact-share h2.contact-heading{font-size:1.7rem;line-height:1.18;margin:16px 0;letter-spacing:normal}
