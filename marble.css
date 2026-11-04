@@ -188,3 +188,34 @@ body.inner-luxury::before {
       url("images/chocolate-marble-mobile.webp") center / cover no-repeat;
   }
 }
+
+/* Homepage: change brown surfaces only; preserve its photograph and geometry. */
+.home-fullbleed .header,
+.home-fullbleed footer,
+.home-fullbleed .spa-blog,
+.home-fullbleed .home-links,
+.home-fullbleed .home-link-grid a,
+.home-fullbleed .cookie-panel,
+.home-fullbleed .menu-toggle {
+  background: linear-gradient(#170b0414,#170b0426),
+    url("images/chocolate-marble.webp") center 6% / cover no-repeat;
+  border-color: #bd9257;
+  color: #fff3dc;
+}
+.home-fullbleed footer { background-position: center 87%; }
+.home-fullbleed .home-links { background-position: center 68%; }
+.home-fullbleed .spa-blog {
+  background-position: 30% 68%;
+  backdrop-filter: none;
+  box-shadow: 0 12px 30px #12070252;
+}
+.home-fullbleed .home-link-grid a { background-position: 30% 68%; }
+.home-fullbleed .home-link-grid :is(span,small),
+.home-fullbleed .home-links .eyebrow { color: #e5bd77; }
+@media(max-width:700px) {
+  .home-fullbleed .header nav,
+  .home-fullbleed .cookie-panel {
+    background: linear-gradient(#170b0426,#170b0433),
+      url("images/chocolate-marble-mobile.webp") center / cover no-repeat;
+  }
+}
