@@ -98,16 +98,10 @@
     }
     if(verified&&!available.length)$('timeSummary').textContent=tr('Na tento dátum a masáž nie je v online evidencii voľný termín.','No available time for this date and treatment in the online schedule.');
   }
-  function updatePayment(){
-    const el=$('paymentSummary');if(!el)return;
-    const price=Number(service.value.match(/(\d+) €/)?.[1]||0);
-    const full=document.querySelector('input[name="paymentChoice"]:checked')?.value==='full';
-    el.textContent=!price?tr('Vyberte masáž a zobrazí sa cena.','Select a treatment to see the price.'):
-      full?tr('Celá cena: ','Full price: ')+price+' €.':tr('Záloha: 10 €. Doplatok na mieste: ','Deposit: €10. Balance at your appointment: €')+(price-10)+(en?'.':' €.');
-  }
+  function updatePayment(){ /* Cash only; no online or advance payments. */ }
   service.addEventListener('change',()=>{refreshTimes();updatePayment();});
   date.addEventListener('change',()=>{renderCalendar();refreshTimes();});
-  document.querySelectorAll('input[name="paymentChoice"]').forEach(r=>r.addEventListener('change',updatePayment));
+
   const requested=new URLSearchParams(location.search).get('service');
   const ids={klasicka:1,makke:5,bankovanie:6};
   if(ids[requested])service.selectedIndex=ids[requested];
@@ -118,7 +112,7 @@
     if(!date.value||!validDay(new Date(date.value+'T00:00:00'))){message.textContent=tr('Vyberte pracovný deň najviac mesiac dopredu.','Choose a weekday within the next month.');return;}
     if(!time.value){message.textContent=tr('Vyberte čas masáže.','Select a treatment time.');return;}
     const val=id=>$(id).value.trim();
-    const body=[tr('Dobrý deň,','Hello,'),'',tr('chcem požiadať o termín masáže.','I would like to request a massage appointment.'),'',tr('Masáž: ','Treatment: ')+service.selectedOptions[0].textContent,tr('Dátum: ','Date: ')+val('date'),tr('Preferovaný čas: ','Preferred time: ')+val('time'),tr('Preferovaná úhrada po potvrdení: ','Payment preference after confirmation: ')+(document.querySelector('input[name="paymentChoice"]:checked')?.value==='full'?tr('celá cena vopred','full price in advance'):tr('záloha 10 €','€10 deposit')),tr('Meno: ','Name: ')+val('name'),tr('Telefón: ','Phone: ')+val('phone'),tr('E-mail: ','Email: ')+val('email'),tr('Poznámka: ','Note: ')+(val('note')||'—'),'',tr('Prosím o potvrdenie dostupnosti termínu.','Please confirm whether this appointment is available.')].join('\n');
+    const body=[tr('Dobrý deň,','Hello,'),'',tr('chcem požiadať o termín masáže.','I would like to request a massage appointment.'),'',tr('Masáž: ','Treatment: ')+service.selectedOptions[0].textContent,tr('Dátum: ','Date: ')+val('date'),tr('Preferovaný čas: ','Preferred time: ')+val('time'),tr('Platba: ','Payment: ')+tr('iba v hotovosti na mieste po masáži','cash only on site after the treatment'),tr('Meno: ','Name: ')+val('name'),tr('Telefón: ','Phone: ')+val('phone'),tr('E-mail: ','Email: ')+val('email'),tr('Poznámka: ','Note: ')+(val('note')||'—'),'',tr('Prosím o potvrdenie dostupnosti termínu.','Please confirm whether this appointment is available.')].join('\n');
     message.textContent=tr('Otvára sa e-mailová aplikácia. Žiadosť sa odošle až po stlačení Odoslať v e-maile. Termín zatiaľ nie je rezervovaný ani potvrdený.','Opening your email app. Send the prepared email to submit your request. The appointment is not reserved or confirmed yet.');
     window.location.href='mailto:majahulmanova@gmail.com?subject='+encodeURIComponent(tr('Žiadosť o termín – Masáže Majka','Appointment request – Masáže Majka'))+'&body='+encodeURIComponent(body);
   });
