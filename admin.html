@@ -301,7 +301,18 @@ async function refreshAdminSlots(){
   const weekday=new Date(day+'T12:00:00Z').getUTCDay();
   const duration=Number(selectedService.duration_minutes);
   let free=0;
-  for(let minute=9*60;minute+duration<=17*60+30;minute+=30){
+  // Keep the familiar half-hour grid, but also offer the exact end of an
+  // existing appointment (for example 09:45 after a 45-minute massage).
+  // Quarter-hour starts represent service boundaries, not 15-minute massages.
+  const candidates=new Set();
+  for(let minute=9*60;minute+duration<=17*60+30;minute+=30)candidates.add(minute);
+  for(const event of [...busy.bookings,...busy.blocks]){
+    if(localDay(event.ends_at)!==day)continue;
+    const [hour,minute]=localTime(event.ends_at).split(':').map(Number);
+    const boundary=hour*60+minute;
+    if(boundary%15===0&&boundary>=9*60&&boundary+duration<=17*60+30)candidates.add(boundary);
+  }
+  for(const minute of [...candidates].sort((a,b)=>a-b)){
     const label=String(Math.floor(minute/60)).padStart(2,'0')+':'+String(minute%60).padStart(2,'0');
     const start=toUtc(day,label),end=new Date(Date.parse(start)+duration*60000).toISOString();
     const booked=busy.bookings.some(b=>overlaps(start,end,b.starts_at,b.ends_at));
@@ -323,7 +334,7 @@ async function refreshAdminSlots(){
     };
     slotGrid.append(button);
   }
-  slotInfo.textContent='Zelená = voľné · červená = obsadené · sivá = mimo prevádzky · zlatá = vybrané.';
+  slotInfo.textContent='Zelená = voľné · červená = obsadené · sivá = mimo prevádzky · zlatá = vybrané. Po 45-minútovej masáži môže ďalšia začať napríklad o 09:45 – bez zbytočnej medzery.';
   if(!free)slotNotice('Na tento deň nie sú voľné termíny pre vybranú masáž. Zmeňte dátum alebo typ masáže.');
 }
 $('date').addEventListener('change',refreshAdminSlots);
