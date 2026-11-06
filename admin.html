@@ -32,6 +32,25 @@ calendarStyle.textContent=`
   .cal-summary{display:flex;justify-content:space-between;gap:14px;align-items:baseline;flex-wrap:wrap;border-top:1px solid #80593d;padding-top:20px}
   .cal-summary h3{font:24px Georgia,serif;color:#f4d39c;margin:0}
   .cal-summary p{margin:0;color:#e5cbb0;font-size:14px}
+  .dash-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 21px}
+  .dash-stat{margin:0;padding:15px 12px;text-align:left;background:#4d3628;border:1px solid #8e6847;border-radius:15px;color:#f5dfbf;min-width:0}
+  .dash-stat:focus-visible,.dash-stat:hover{outline:2px solid #e8bd76;outline-offset:2px}
+  .dash-stat b{display:block;font-size:clamp(23px,5vw,34px);line-height:1.25;color:#f4d39c}
+  .dash-stat span{display:block;font-size:13px;line-height:1.35;margin-top:4px}
+  .dash-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:15px 0;border-top:1px solid #80593d}
+  .dash-view{margin:0;background:#58402e;color:#fff1dc;border:1px solid #8e6847;padding:10px 14px;font-size:14px}
+  .dash-view[aria-pressed="true"]{background:#e8bd76;color:#29190d;border-color:#e8bd76}
+  .dash-filters{display:grid;grid-template-columns:minmax(0,2fr) minmax(120px,1fr);gap:10px;margin:0 0 16px}
+  .dash-filters label{font-size:13px;margin:0 0 5px;color:#edd0aa}
+  .dash-filters input,.dash-filters select{min-height:47px;font-size:15px}
+  .dash-page{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0}
+  .dash-page p{margin:0;color:#e7c9a8;font-size:14px}
+  .dash-page button{margin:0;padding:10px 12px;font-size:14px;background:#614631;color:#fff3df;border:1px solid #a77d4b}
+  .dash-page-actions{display:flex;gap:8px}
+  .dash-group{font-size:16px;margin:22px 0 9px;color:#f4d39c;border-bottom:1px solid #80593d;padding-bottom:7px}
+  .dash-compact{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .dash-compact .dash-date{font-size:13px;color:#f0d19e}
+  .dash-search-note{font-size:12px;color:#ddc6ac;margin:0 0 11px}
   .cal-entry{border-left:4px solid #dfb86f;background:#513a2b;border-radius:12px;padding:13px 15px;margin:12px 0}
   .cal-entry.cal-block{border-color:#f39f9b}
   .cal-entry.cal-cancelled{border-color:#918274;opacity:.65}
@@ -49,7 +68,7 @@ calendarStyle.textContent=`
   .admin-slot-note{font-size:13px;color:#e8d0b7;margin:6px 0 8px;line-height:1.5}
   .admin-slot-alert{padding:11px 13px;border-radius:10px;background:#78423e;border:1px solid #e7a69e;color:#fff1e5;margin:12px 0}
   .admin-slot-alert.is-ok{background:#295543;border-color:#83bba1}
-  @media(max-width:600px){section{padding:18px 15px}.cal-weekdays,.cal-grid{gap:4px}.cal-day{min-height:65px;padding:8px 2px 4px;border-radius:9px}.cal-date{font-size:15px}.cal-count{font-size:10px;padding:1px 5px}.cal-title{font-size:24px}.cal-actions{gap:5px}.cal-nav{width:38px;height:38px}.cal-today{padding:9px 10px}.cal-toolbar{align-items:flex-start}}
+  @media(max-width:600px){section{padding:18px 15px}.cal-weekdays,.cal-grid{gap:4px}.cal-day{min-height:65px;padding:8px 2px 4px;border-radius:9px}.cal-date{font-size:15px}.cal-count{font-size:10px;padding:1px 5px}.cal-title{font-size:24px}.cal-actions{gap:5px}.cal-nav{width:38px;height:38px}.cal-today{padding:9px 10px}.cal-toolbar{align-items:flex-start}.dash-stats{gap:6px}.dash-stat{padding:12px 9px}.dash-stat span{font-size:11px}.dash-filters{grid-template-columns:1fr}.dash-view{flex:1;padding:11px 5px}}
   @media(max-width:370px){.cal-day{min-height:57px}.cal-date{font-size:14px}.cal-count{font-size:9px}.cal-title{font-size:21px}}
 `;
 document.head.append(calendarStyle);
@@ -60,6 +79,11 @@ $('reload').remove();
 const calendarUi=document.createElement('div');
 calendarUi.id='calendarUi';
 calendarUi.innerHTML=`
+  <div class="dash-stats" aria-label="Prehľad rezervácií">
+    <button type="button" class="dash-stat" id="dashDay"><b id="dashDayCount">–</b><span>Vybraný deň</span></button>
+    <button type="button" class="dash-stat" id="dashWeek"><b id="dashWeekCount">–</b><span>Vybraný týždeň</span></button>
+    <button type="button" class="dash-stat" id="dashMonth"><b id="dashMonthCount">–</b><span>Zobrazený mesiac</span></button>
+  </div>
   <div class="cal-toolbar">
     <h3 id="calMonth" class="cal-title"></h3>
     <div class="cal-actions">
@@ -73,6 +97,16 @@ calendarUi.innerHTML=`
   <div class="cal-weekdays" aria-hidden="true"><span>Po</span><span>Ut</span><span>St</span><span>Št</span><span>Pi</span><span>So</span><span>Ne</span></div>
   <div id="calGrid" class="cal-grid" role="group" aria-label="Mesačný kalendár"></div>
   <div class="cal-legend"><span><i></i> Rezervácia</span><span><i class="blocked"></i> Blokovaný čas</span></div>
+  <div class="dash-controls" role="group" aria-label="Zobrazenie rezervácií">
+    <button type="button" class="dash-view" id="dashViewDay" aria-pressed="true">Deň</button>
+    <button type="button" class="dash-view" id="dashViewWeek" aria-pressed="false">Týždeň</button>
+    <button type="button" class="dash-view" id="dashViewList" aria-pressed="false">Mesačný zoznam</button>
+  </div>
+  <div class="dash-filters">
+    <div><label for="dashSearch">Hľadať zákazníka alebo telefón</label><input id="dashSearch" type="search" placeholder="Meno alebo telefónne číslo" autocomplete="off"></div>
+    <div><label for="dashFilter">Zobraziť</label><select id="dashFilter"><option value="active">Aktívne rezervácie</option><option value="all">Všetko vrátane zrušených</option><option value="cancelled">Zrušené rezervácie</option></select></div>
+  </div>
+  <p class="dash-search-note">Vyhľadávanie prehľadáva zobrazený mesiac. Šípkami nad kalendárom môžete prejsť na iný mesiac.</p>
   <div class="cal-summary"><h3 id="calSelectedDate"></h3><p id="calSelectedCount"></p></div>
 `;
 $('bookings').before(calendarUi);
@@ -204,7 +238,22 @@ function toUtc(date,time){
   return new Date(Date.parse(date+'T00:00:00Z')+(hour*60+minute-offset*60)*60000).toISOString();
 }
 async function check(){if(recovering){showReset();return}const {data:{user}}=await db.auth.getUser();if(!user){$('login').hidden=false;$('panel').hidden=true;status('Prihláste sa.');return}const {data,error}=await db.from('majka_admins').select('role').eq('user_id',user.id).maybeSingle();if(error||!data){await db.auth.signOut();$('login').hidden=false;$('panel').hidden=true;status('Tento účet zatiaľ nemá pridelené oprávnenie ADMIN.');return}$('login').hidden=true;$('panel').hidden=false;status('Prihlásený administrátor: '+user.email);await load()}
-$('loginForm').onsubmit=async e=>{e.preventDefault();status('Overujem…');const {error}=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});if(error){status('Prihlásenie sa nepodarilo. Skontrolujte údaje.');return}await check()};
+$('loginForm').onsubmit=async e=>{
+  e.preventDefault();status('Overujem prihlasovacie údaje…');
+  const submit=e.target.querySelector('[type="submit"]');submit.disabled=true;
+  try{
+    const {error}=await db.auth.signInWithPassword({email:$('email').value.trim().toLowerCase(),password:$('password').value});
+    if(error){
+      if(error.code==='email_not_confirmed')status('E-mail zatiaľ nie je potvrdený. Skontrolujte potvrdzovací e-mail.');
+      else if(error.code==='invalid_credentials'||error.status===400)status('Nesprávny e-mail alebo heslo. Ak ste heslo menili, na tomto počítači zadajte posledné nové heslo, nie staré uložené prehliadačom. Môžete použiť aj „Nastaviť alebo obnoviť heslo“.');
+      else if(error.status===429)status('Priveľa pokusov o prihlásenie. Počkajte niekoľko minút a skúste znova.');
+      else status('Prihlásenie zlyhalo: '+error.message);
+      return;
+    }
+    await check();
+  }catch(error){status('Nepodarilo sa spojiť s prihlasovacou službou. Skontrolujte internet a skúste znova.');}
+  finally{submit.disabled=false;}
+};
 $('logout').onclick=async()=>{await db.auth.signOut();await check()};
 const localDay=value=>new Date(value).toLocaleDateString('sv-SE',{timeZone:'Europe/Bratislava'});
 const localTime=value=>new Date(value).toLocaleTimeString('sk-SK',{timeZone:'Europe/Bratislava',hour:'2-digit',minute:'2-digit'});
@@ -268,12 +317,31 @@ const today=localDay(new Date());
 let selectedDay=today;
 let calendarYear=Number(today.slice(0,4)),calendarMonth=Number(today.slice(5,7))-1;
 let calendarBookings=[],calendarBlocks=[],calendarRequest=0;
+let agendaView='day',agendaPage=0;
+const agendaPageSize=10;
 const utcDay=(year,month,day)=>new Date(Date.UTC(year,month,day)).toISOString().slice(0,10);
+const dayOffset=(day,count)=>new Date(new Date(day+'T12:00:00Z').getTime()+count*864e5).toISOString().slice(0,10);
+const mondayOf=day=>dayOffset(day,-((new Date(day+'T12:00:00Z').getUTCDay()+6)%7));
+const shortDate=day=>new Intl.DateTimeFormat('sk-SK',{day:'numeric',month:'numeric',timeZone:'UTC'}).format(new Date(day+'T12:00:00Z'));
 const blockIsOnDay=(block,day)=>{
   const end=new Date(block.ends_at).getTime()-1;
   return localDay(block.starts_at)<=day&&localDay(new Date(Math.max(end,new Date(block.starts_at).getTime())))>=day;
 };
 const activeOnDay=day=>calendarBookings.filter(b=>b.status!=='cancelled'&&localDay(b.starts_at)===day);
+function updateDashboardStats(){
+  const monday=mondayOf(selectedDay),sunday=dayOffset(monday,6),month=utcDay(calendarYear,calendarMonth,1).slice(0,7);
+  const active=calendarBookings.filter(b=>b.status!=='cancelled');
+  $('dashDayCount').textContent=String(active.filter(b=>localDay(b.starts_at)===selectedDay).length);
+  $('dashWeekCount').textContent=String(active.filter(b=>{const day=localDay(b.starts_at);return day>=monday&&day<=sunday}).length);
+  $('dashMonthCount').textContent=String(active.filter(b=>localDay(b.starts_at).slice(0,7)===month).length);
+}
+function setAgendaView(view){
+  agendaView=view;agendaPage=0;
+  for(const [key,id] of [['day','dashViewDay'],['week','dashViewWeek'],['list','dashViewList']]){
+    $(id).setAttribute('aria-pressed',String(view===key));
+  }
+  renderSelectedDay();
+}
 async function load(){
   const s=await db.from('majka_services').select('id,name_sk,duration_minutes,price_eur').eq('active',true).order('id');
   if(s.error){status('Nepodarilo sa načítať služby.');return}
@@ -315,26 +383,60 @@ function renderCalendar(){
     if(blocked){const dot=document.createElement('i');dot.className='cal-dot cal-block-dot';dots.append(dot)}
     btn.append(dots);
     btn.onclick=async()=>{
-      selectedDay=day;$('date').value=day;
+      selectedDay=day;agendaPage=0;$('date').value=day;setAgendaView('day');
       if(!inMonth){calendarYear=Number(day.slice(0,4));calendarMonth=Number(day.slice(5,7))-1;await loadBookings();}
-      else{renderCalendar();renderSelectedDay();refreshAdminSlots();}
+      else{renderCalendar();refreshAdminSlots();}
     };
     grid.append(btn);
   }
 }
 function renderSelectedDay(){
+  updateDashboardStats();
   const date=new Date(selectedDay+'T12:00:00Z');
   const label=new Intl.DateTimeFormat('sk-SK',{weekday:'long',day:'numeric',month:'long',timeZone:'Europe/Bratislava'}).format(date);
-  $('calSelectedDate').textContent=label[0].toUpperCase()+label.slice(1);
-  const bookings=calendarBookings.filter(b=>localDay(b.starts_at)===selectedDay);
-  const blocks=calendarBlocks.filter(b=>blockIsOnDay(b,selectedDay));
+  const from=agendaView==='day'?selectedDay:agendaView==='week'?mondayOf(selectedDay):utcDay(calendarYear,calendarMonth,1);
+  const until=agendaView==='day'?dayOffset(selectedDay,1):agendaView==='week'?dayOffset(from,7):utcDay(calendarYear,calendarMonth+1,1);
+  const scope=agendaView==='day'?label[0].toUpperCase()+label.slice(1):agendaView==='week'?'Týždeň '+shortDate(from)+' – '+shortDate(dayOffset(until,-1)): 'Rezervácie za '+$('calMonth').textContent;
+  $('calSelectedDate').textContent=scope;
+  const bookings=calendarBookings.filter(b=>{const day=localDay(b.starts_at);return day>=from&&day<until});
+  const blocks=calendarBlocks.filter(b=>blockIsOnDay(b,from)||blockIsOnDay(b,dayOffset(until,-1))||(localDay(b.starts_at)>from&&localDay(b.starts_at)<until));
   const active=bookings.filter(b=>b.status!=='cancelled').length;
-  $('calSelectedCount').textContent=active+' rezervácií · '+blocks.length+' blokovaných úsekov';
+  const query=$('dashSearch').value.trim().toLocaleLowerCase('sk-SK');
+  const filter=$('dashFilter').value;
+  const matchingBookings=bookings.filter(b=>{
+    if(filter==='active'&&b.status==='cancelled')return false;
+    if(filter==='cancelled'&&b.status!=='cancelled')return false;
+    if(!query)return true;
+    return (b.customer_name+' '+b.customer_phone).toLocaleLowerCase('sk-SK').includes(query);
+  });
+  const matchingBlocks=(!query&&filter!=='cancelled')?blocks:[];
+  $('calSelectedCount').textContent=active+' aktívnych rezervácií · '+blocks.length+' blokovaných úsekov';
   const container=$('bookings');container.replaceChildren();
-  if(!bookings.length&&!blocks.length){const empty=document.createElement('p');empty.className='cal-empty';empty.textContent='Na tento deň nie sú zapísané žiadne rezervácie ani blokovania.';container.append(empty);return}
-  const events=[...bookings.map(b=>({kind:'booking',start:b.starts_at,item:b})),...blocks.map(b=>({kind:'block',start:b.starts_at,item:b}))].sort((a,b)=>new Date(a.start)-new Date(b.start));
-  for(const event of events){
+  const events=[...matchingBookings.map(b=>({kind:'booking',start:b.starts_at,item:b})),...matchingBlocks.map(b=>({kind:'block',start:b.starts_at,item:b}))].sort((a,b)=>new Date(a.start)-new Date(b.start));
+  if(!events.length){const empty=document.createElement('p');empty.className='cal-empty';empty.textContent=query?'Žiadne výsledky. Skúste iné meno, telefón alebo mesiac.':'Pre tento výber nie sú žiadne rezervácie ani blokovania.';container.append(empty);return}
+  const pageCount=Math.ceil(events.length/agendaPageSize);
+  agendaPage=Math.min(agendaPage,pageCount-1);
+  const pageInfo=document.createElement('div');pageInfo.className='dash-page';
+  const pageLabel=document.createElement('p');pageLabel.textContent='Zobrazené '+(agendaPage*agendaPageSize+1)+'–'+Math.min(events.length,(agendaPage+1)*agendaPageSize)+' z '+events.length+' záznamov';pageInfo.append(pageLabel);
+  if(pageCount>1){
+    const actions=document.createElement('div');actions.className='dash-page-actions';
+    for(const [text,delta] of [['← Späť',-1],['Ďalej →',1]]){
+      const btn=document.createElement('button');btn.type='button';btn.textContent=text;btn.disabled=agendaPage+delta<0||agendaPage+delta>=pageCount;
+      btn.onclick=()=>{agendaPage+=delta;renderSelectedDay();$('calSelectedDate').scrollIntoView({behavior:'smooth',block:'start'})};
+      actions.append(btn);
+    }
+    pageInfo.append(actions);
+  }
+  container.append(pageInfo);
+  let lastGroup='';
+  for(const event of events.slice(agendaPage*agendaPageSize,(agendaPage+1)*agendaPageSize)){
     const item=event.item;
+    const eventDay=localDay(item.starts_at);
+    if(agendaView!=='day'&&eventDay!==lastGroup){
+      const group=document.createElement('h4');group.className='dash-group';
+      group.textContent=new Intl.DateTimeFormat('sk-SK',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'}).format(new Date(eventDay+'T12:00:00Z'));
+      container.append(group);lastGroup=eventDay;
+    }
     const entry=document.createElement('article');entry.className='cal-entry';
     if(event.kind==='block')entry.classList.add('cal-block');
     if(item.status==='cancelled')entry.classList.add('cal-cancelled');
@@ -378,9 +480,19 @@ async function loadBookings(){
   $('calSelectedCount').textContent='Načítavam kalendár…';
   const start=new Date(Date.UTC(calendarYear,calendarMonth,1)-9*864e5).toISOString();
   const end=new Date(Date.UTC(calendarYear,calendarMonth+1,1)+9*864e5).toISOString();
+  async function fetchAll(makeQuery){
+    const rows=[];const batchSize=250;
+    for(let offset=0;offset<10000;offset+=batchSize){
+      const {data,error}=await makeQuery().range(offset,offset+batchSize-1);
+      if(error)return {data:[],error};
+      rows.push(...(data||[]));
+      if(!data||data.length<batchSize)return {data:rows,error:null};
+    }
+    return {data:[],error:{message:'Prekročený limit záznamov. Zúžte obdobie.'}};
+  }
   const [bookings,blocks]=await Promise.all([
-    db.from('majka_bookings').select('id,customer_name,customer_phone,starts_at,ends_at,status,service_id').gte('starts_at',start).lt('starts_at',end).order('starts_at'),
-    db.from('majka_blocked_times').select('id,starts_at,ends_at,reason').lt('starts_at',end).gt('ends_at',start).order('starts_at')
+    fetchAll(()=>db.from('majka_bookings').select('id,customer_name,customer_phone,starts_at,ends_at,status,service_id').gte('starts_at',start).lt('starts_at',end).order('starts_at').order('id')),
+    fetchAll(()=>db.from('majka_blocked_times').select('id,starts_at,ends_at,reason').lt('starts_at',end).gt('ends_at',start).order('starts_at').order('id'))
   ]);
   if(request!==calendarRequest)return;
   calendarBookings=bookings.data||[];calendarBlocks=blocks.data||[];
@@ -390,12 +502,20 @@ async function loadBookings(){
 function changeCalendarMonth(delta){
   const next=new Date(Date.UTC(calendarYear,calendarMonth+delta,1));
   calendarYear=next.getUTCFullYear();calendarMonth=next.getUTCMonth();
-  selectedDay=utcDay(calendarYear,calendarMonth,1);$('date').value=selectedDay;
+  selectedDay=utcDay(calendarYear,calendarMonth,1);agendaPage=0;$('date').value=selectedDay;
   loadBookings();
 }
+$('dashViewDay').onclick=()=>setAgendaView('day');
+$('dashViewWeek').onclick=()=>setAgendaView('week');
+$('dashViewList').onclick=()=>setAgendaView('list');
+$('dashDay').onclick=()=>setAgendaView('day');
+$('dashWeek').onclick=()=>setAgendaView('week');
+$('dashMonth').onclick=()=>setAgendaView('list');
+$('dashSearch').addEventListener('input',()=>setAgendaView('list'));
+$('dashFilter').addEventListener('change',()=>{agendaPage=0;renderSelectedDay()});
 $('calPrev').onclick=()=>changeCalendarMonth(-1);
 $('calNext').onclick=()=>changeCalendarMonth(1);
-$('calToday').onclick=()=>{const now=localDay(new Date());selectedDay=now;calendarYear=Number(now.slice(0,4));calendarMonth=Number(now.slice(5,7))-1;$('date').value=now;loadBookings()};
+$('calToday').onclick=()=>{const now=localDay(new Date());selectedDay=now;calendarYear=Number(now.slice(0,4));calendarMonth=Number(now.slice(5,7))-1;$('date').value=now;setAgendaView('day');loadBookings()};
 $('calRefresh').onclick=loadBookings;
 $('bookingForm').onsubmit=async e=>{
   e.preventDefault();
