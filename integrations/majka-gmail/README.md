@@ -1,4 +1,4 @@
-# Masáže Majka – Gmail bridge (pripravené na autorizáciu)
+# Masáže Majka – Gmail bridge (test Martina → ostrá prevádzka Majka)
 
 **Jediná databáza rezervácií je Supabase.** Skript `Code.gs` nezapisuje rezervácie ani nevytvára druhú evidenciu.
 
@@ -6,7 +6,15 @@
 - Supabase (Frankfurt) obsahuje služby, pracovný čas, blokácie a databázovú ochranu proti prekrytiu rezervácií.
 - Funkcie `majka-availability` a `majka-create-booking` umožňujú termíny 365 dní dopredu.
 - Verejný kalendár číta aktuálne voľné časy zo Supabase. Požiadavku však stále odosiela cez e-mail a netvári sa ako potvrdená rezervácia.
-- `Code.gs` je pripravený na autorizované odosielanie Gmail správ podpísaným serverovým volaním.
+- `Code.gs` umožňuje otestovať Gmail odosielanie z účtu Martiny. Pri tomto teste sa posiela iba na jej vlastný e-mail, bez skutočných zákazníckych údajov. Ostrú prevádzku neskôr autorizuje Majka zo svojho Google účtu.
+
+## Teraz: bezpečný test z Martininho Gmailu
+1. Prihláste sa do `martinamundova36@gmail.com` a otvorte https://script.google.com/home/start.
+2. Vytvorte nový Apps Script projekt `Masáže Majka – TEST Martina` a vložte celý obsah súboru `Code.gs`.
+3. V zozname funkcií vyberte **`sendMajkaTestEmail`** a kliknite **Run / Spustiť**. Google požiada Martinu o povolenie odosielania e-mailov; musí ho odsúhlasiť sama.
+4. Overte, že na `martinamundova36@gmail.com` prišiel e-mail **TEST – Masáže Majka · e-mailové upozornenie**. Obsahuje iba fiktívne testovacie údaje.
+5. **Zatiaľ nenasadzujte Web App** ani nenastavujte ostré odosielanie. Týmto krokom sa testuje samotná autorizácia a Gmail doručenie, nie automatické potvrdzovanie rezervácií.
+6. Keď príde Majka, vytvorí si samostatný Apps Script projekt z rovnakého súboru pod `majahulmanova@gmail.com`; Martinino testovacie nasadenie nesmie odosielať zákaznícke správy.
 
 ## Keď príde Majka
 1. Prihlásiť sa do `majahulmanova@gmail.com` a otvoriť https://script.google.com/home/start.
