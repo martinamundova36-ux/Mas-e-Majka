@@ -1,26 +1,42 @@
 /**
  * Masáže Majka — Gmail delivery bridge, staging.
  * Supabase is the ONLY bookings database. This script never stores bookings.
- * Run from the Majka Google account after approving permissions.
+ * Test first with Martina's Google account; run the production copy only
+ * from Majka's Google account after approving permissions.
  *
  * Script Properties (private, never commit):
  *   MAJKA_SHARED_SECRET = random 32+ character high-entropy secret
  *
- * Deploy as Web App: execute as Majka, access Anyone, ONLY after the
+ * Deploy as Web App: execute as the owner, access Anyone, ONLY after the
  * signed Supabase dispatcher is configured. Unauthenticated requests
  * cannot send emails; signed messages expire after 5 minutes.
  */
-const MAJKA = Object.freeze({owner:'majahulmanova@gmail.com',maxBody:6000,maxSubject:180});
-function setupMajkaMailer() {
+const MAJKA = Object.freeze({
+  productionOwner:'majahulmanova@gmail.com',
+  testOwner:'martinamundova36@gmail.com',
+  maxBody:6000,maxSubject:180
+});
+function activeMajkaSender_() {
   const current=Session.getEffectiveUser().getEmail().toLowerCase();
-  if(current!==MAJKA.owner)throw new Error('Projekt musí autorizovať účet '+MAJKA.owner);
+  if(current!==MAJKA.productionOwner&&current!==MAJKA.testOwner){
+    throw new Error('Schválené účty: '+MAJKA.testOwner+' alebo '+MAJKA.productionOwner);
+  }
+  return current;
+}
+function setupMajkaMailer() {
+  const current=activeMajkaSender_();
   const secret=PropertiesService.getScriptProperties().getProperty('MAJKA_SHARED_SECRET');
   if(!secret||secret.length<32)throw new Error('Najprv v Script Properties nastavte bezpečný MAJKA_SHARED_SECRET (min. 32 znakov).');
-  Logger.log('Majka Gmail mailer pripravený. Tajný kľúč nezapisovať do logov.');
+  Logger.log('Gmail mailer pripravený pre '+current+'. Tajný kľúč nezapisovať do logov.');
 }
 function sendMajkaTestEmail() {
-  setupMajkaMailer();
-  MailApp.sendEmail({to:MAJKA.owner,subject:'TEST – Masáže Majka',body:'Test autorizácie Gmailu. Toto nie je zákaznícka rezervácia.',name:'Masáže Majka',replyTo:MAJKA.owner});
+  const current=activeMajkaSender_();
+  MailApp.sendEmail({
+    to:current,
+    subject:'TEST – Masáže Majka · e-mailové upozornenie',
+    body:'TESTOVACIA SPRÁVA (žiadna skutočná rezervácia)\n\nZákazník: Testovací zákazník\nMasáž: Klasická masáž, 60 minút\nTermín: testovací termín\n\nToto je kontrola Google autorizácie a odoslania e-mailu. Žiadny zákaznícky údaj sa neposlal.',
+    name:'Masáže Majka – test',replyTo:current
+  });
 }
 function base64url_(bytes){return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/,'');}
 function equalSafe_(a,b){
@@ -33,6 +49,7 @@ function reply_(obj){return ContentService.createTextOutput(JSON.stringify(obj))
 function doGet(){return reply_({ok:false,error:'POST only'});}
 function doPost(e) {
   try {
+    const sender=activeMajkaSender_();
     const raw=e&&e.postData&&e.postData.contents;
     if(!raw||raw.length>10000)throw new Error('Invalid payload');
     const p=JSON.parse(raw);
@@ -45,6 +62,8 @@ function doPost(e) {
     if(!Number.isInteger(timestamp)||Math.abs(Date.now()-timestamp)>300000)throw new Error('Expired request');
     if(!/^[a-f0-9-]{30,50}$/i.test(nonce))throw new Error('Invalid nonce');
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)||to.length>150)throw new Error('Invalid address');
+    // Martina's temporary test project can never send mail to customers.
+    if(sender===MAJKA.testOwner&&to.toLowerCase()!==MAJKA.testOwner)throw new Error('Test recipient only');
     if(subject.length<1||subject.length>MAJKA.maxSubject||body.length<1||body.length>MAJKA.maxBody)throw new Error('Invalid message');
     const secret=PropertiesService.getScriptProperties().getProperty('MAJKA_SHARED_SECRET');
     if(!secret||secret.length<32)throw new Error('Not configured');
@@ -59,7 +78,7 @@ function doPost(e) {
       cache.put(key,'used',360);
     } finally {lock.releaseLock();}
     if(MailApp.getRemainingDailyQuota()<1)throw new Error('Gmail quota exhausted');
-    MailApp.sendEmail({to,subject,body,name:'Masáže Majka',replyTo:MAJKA.owner});
+    MailApp.sendEmail({to,subject,body,name:'Masáže Majka',replyTo:sender});
     return reply_({ok:true});
   } catch(err) {
     // Apps Script ContentService returns HTTP 200 even for application errors.
