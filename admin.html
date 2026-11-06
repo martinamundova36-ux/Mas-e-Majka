@@ -2,10 +2,41 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
 const db=createClient('https://zjwoqtyxsmafpfyobbgo.supabase.co','sb_publishable_7oBD3cmlOaxpgQI19Di0IA_73LTc3ly');
 const $=id=>document.getElementById(id),status=t=>$('status').textContent=t;
+const recoveryMessage=document.createElement('p');
+recoveryMessage.id='recoveryMessage';
+recoveryMessage.setAttribute('role','status');
+recoveryMessage.setAttribute('aria-live','polite');
+recoveryMessage.style.cssText='padding:12px 14px;background:#513a2b;border-radius:10px;line-height:1.5;';
+recoveryMessage.hidden=true;
+$('forgot').parentElement.after(recoveryMessage);
+function recoveryNotice(message){recoveryMessage.textContent=message;recoveryMessage.hidden=false;status(message)}
 let recovering=location.hash.includes('type=recovery')||new URLSearchParams(location.search).get('type')==='recovery';
 function showReset(){recovering=true;$('login').hidden=true;$('panel').hidden=true;$('reset').hidden=false;status('Zadajte nové heslo pre administrátorský účet.')}
 db.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')showReset()});
-$('forgot').onclick=async()=>{const email=$('email').value.trim();if(!email){status('Najprv zadajte svoj e-mail.');$('email').focus();return}status('Odosielam odkaz na nastavenie hesla…');const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:'https://martinamundova36-ux.github.io/Mas-e-Majka/admin.html'});status(error?'Odkaz sa nepodarilo odoslať. Skúste znova neskôr.':'Ak účet existuje, na e-mail príde odkaz na nastavenie hesla. Skontrolujte aj spam.')};
+let recoveryPending=false;
+$('forgot').onclick=async()=>{
+  const email=$('email').value.trim();
+  if(!email){recoveryNotice('Najprv vyplňte svoj e-mail vyššie.');$('email').focus();return}
+  if(!$('email').checkValidity()){recoveryNotice('Zadajte platnú e-mailovú adresu.');$('email').focus();return}
+  if(recoveryPending)return;
+  recoveryPending=true;
+  $('forgot').disabled=true;
+  $('forgot').textContent='Odosielam odkaz…';
+  recoveryNotice('Odosielam odkaz na obnovenie hesla…');
+  try{
+    const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:'https://martinamundova36-ux.github.io/Mas-e-Majka/admin.html'});
+    if(error){
+      if(error.status===429||error.code==='over_email_send_rate_limit')recoveryNotice('Odkaz už mohol byť odoslaný. Skontrolujte Gmail aj Spam. Pred ďalším pokusom počkajte aspoň 60 sekúnd.');
+      else recoveryNotice('Odkaz sa nepodarilo odoslať: '+error.message);
+    }else recoveryNotice('Žiadosť bola prijatá. Ak účet existuje, na '+email+' príde odkaz na nastavenie hesla. Skontrolujte aj Spam.');
+  }catch(e){
+    recoveryNotice('Pripojenie zlyhalo. Skontrolujte internet a skúste to neskôr.');
+  }finally{
+    recoveryPending=false;
+    $('forgot').disabled=false;
+    $('forgot').textContent='Nastaviť alebo obnoviť heslo';
+  }
+};
 $('resetForm').onsubmit=async e=>{e.preventDefault();const pass=$('newPassword').value;if(pass!==$('confirmPassword').value){status('Heslá sa nezhodujú.');return}const {error}=await db.auth.updateUser({password:pass});if(error){status('Heslo sa nepodarilo uložiť: '+error.message);return}recovering=false;$('reset').hidden=true;status('Heslo bolo úspešne nastavené.');await check()};
 let services=[];
 const local=(d)=>new Date(d).toLocaleString('sk-SK',{timeZone:'Europe/Bratislava'});
