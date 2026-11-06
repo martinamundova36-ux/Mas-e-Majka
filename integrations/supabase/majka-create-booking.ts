@@ -27,7 +27,8 @@ Deno.serve(async req=>{
   if(he||!hours?.enabled)return json({error:"Closed"},409);
   const minutes=(v:string)=>{const [h,m]=v.split(":").map(Number);return h*60+m};
   const t=minutes(clock),duration=service.duration_minutes;
-  if(t<minutes(hours.opens_at)||t+duration>minutes(hours.closes_at)||t%30!==0)return json({error:"Time unavailable"},409);
+  // A 45-minute massage can be followed immediately at :15 or :45.
+  if(t<minutes(hours.opens_at)||t+duration>minutes(hours.closes_at)||t%15!==0)return json({error:"Time unavailable"},409);
   const tz=new Intl.DateTimeFormat("en-US",{timeZone:"Europe/Bratislava",timeZoneName:"shortOffset"}).formatToParts(date).find(p=>p.type==="timeZoneName")?.value||"GMT+1";
   const offset=Number(tz.replace("GMT",""))||1;
   const startsAt=new Date(Date.parse(day+"T00:00:00Z")+(t-offset*60)*60000);
