@@ -312,3 +312,47 @@ body.inner-luxury .marble-reading-panel .article-share .share-actions > button {
   color: #fff3dc !important;
   border-color: #b48a56 !important;
 }
+
+/* Live availability states in the SK/EN booking calendar. */
+body.inner-luxury .booking-slot-legend {
+  margin: 12px 0 8px;
+  padding: 10px 12px;
+  border: 1px solid #b48a56;
+  border-radius: 10px;
+  font-size: .84rem;
+  line-height: 1.5;
+  color: #fff0d8;
+  background: rgba(55, 31, 18, .72);
+}
+body.inner-luxury .time-slot:not(:disabled):not(.selected):not(.unverified) {
+  background: #d9efe0;
+  color: #244933;
+  border-color: #76a88b;
+}
+body.inner-luxury .time-slot:disabled {
+  background: #94544e;
+  color: #fff0eb;
+  border-color: #d7a29a;
+  opacity: 1;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+body.inner-luxury .time-slot.unverified:not(.selected) {
+  background: #e9d6b5;
+  color: #614426;
+  border-color: #bea17a;
+}
+body.inner-luxury .time-slot.selected {
+  background: #e6b96d;
+  color: #28180f;
+  border-color: #f6dfad;
+  box-shadow: inset 0 0 0 2px #fff0ce;
+}
+body.inner-luxury #formMessage:not(:empty) {
+  padding: 12px 14px;
+  border: 1px solid #dc9a8d;
+  border-radius: 10px;
+  background: rgba(119, 57, 45, .9);
+  color: #fff3ea;
+  line-height: 1.5;
+}
