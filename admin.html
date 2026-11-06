@@ -10,6 +10,10 @@ recoveryMessage.style.cssText='padding:12px 14px;background:#513a2b;border-radiu
 recoveryMessage.hidden=true;
 $('forgot').parentElement.after(recoveryMessage);
 function recoveryNotice(message){recoveryMessage.textContent=message;recoveryMessage.hidden=false;status(message)}
+const recoveryErrorCode=new URLSearchParams(location.hash.slice(1)).get('error_code')||new URLSearchParams(location.search).get('error_code');
+if(recoveryErrorCode==='otp_expired'||recoveryErrorCode==='access_denied'){
+  recoveryNotice('Tento obnovovací odkaz už neplatí alebo bol použitý. V Gmaile otvorte najnovší e-mail od Supabase Auth, nie staršiu správu. Ak treba, požiadajte o nový odkaz.');
+}
 let recovering=location.hash.includes('type=recovery')||new URLSearchParams(location.search).get('type')==='recovery';
 function showReset(){recovering=true;$('login').hidden=true;$('panel').hidden=true;$('reset').hidden=false;status('Zadajte nové heslo pre administrátorský účet.')}
 db.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')showReset()});
