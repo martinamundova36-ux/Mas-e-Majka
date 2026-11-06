@@ -2,6 +2,37 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
 const db=createClient('https://zjwoqtyxsmafpfyobbgo.supabase.co','sb_publishable_7oBD3cmlOaxpgQI19Di0IA_73LTc3ly');
 const $=id=>document.getElementById(id),status=t=>$('status').textContent=t;
+const googleButton=document.createElement('button');
+googleButton.id='googleSignIn';
+googleButton.type='button';
+googleButton.className='secondary';
+googleButton.style.cssText='display:block;width:100%;min-height:52px;margin:18px 0 12px;';
+googleButton.textContent='Prihlásiť sa cez Google';
+googleButton.hidden=true;
+$('loginForm').before(googleButton);
+googleButton.onclick=async()=>{
+  googleButton.disabled=true;
+  status('Otváram zabezpečené prihlásenie cez Google…');
+  try{
+    const {error}=await db.auth.signInWithOAuth({
+      provider:'google',
+      options:{redirectTo:'https://martinamundova36-ux.github.io/Mas-e-Majka/admin.html'}
+    });
+    if(error)status('Prihlásenie cez Google sa nepodarilo: '+error.message);
+  }catch(e){status('Google prihlásenie sa nepodarilo otvoriť. Skúste znova.');}
+  finally{googleButton.disabled=false;}
+};
+async function enableGoogleButtonWhenReady(){
+  try{
+    const response=await fetch('https://zjwoqtyxsmafpfyobbgo.supabase.co/auth/v1/settings',{
+      headers:{apikey:'sb_publishable_7oBD3cmlOaxpgQI19Di0IA_73LTc3ly'}
+    });
+    if(!response.ok)return;
+    const settings=await response.json();
+    googleButton.hidden=settings?.external?.google!==true;
+  }catch(e){/* Heslové prihlásenie ostáva dostupné pri výpadku nastavení. */}
+}
+enableGoogleButtonWhenReady();
 const recoveryMessage=document.createElement('p');
 recoveryMessage.id='recoveryMessage';
 recoveryMessage.setAttribute('role','status');
