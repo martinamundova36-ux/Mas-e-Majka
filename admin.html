@@ -68,6 +68,7 @@ calendarStyle.textContent=`
   .admin-slot-note{font-size:13px;color:#e8d0b7;margin:6px 0 8px;line-height:1.5}
   .admin-slot-alert{padding:11px 13px;border-radius:10px;background:#78423e;border:1px solid #e7a69e;color:#fff1e5;margin:12px 0}
   .admin-slot-alert.is-ok{background:#295543;border-color:#83bba1}
+  #mobileAdminTabs{display:none}
   @media(min-width:1100px){
     main{max-width:1550px;padding:0 24px}
     #panel{display:grid;grid-template-columns:minmax(550px,1.2fr) minmax(425px,1fr);align-items:start;gap:18px}
@@ -84,6 +85,37 @@ calendarStyle.textContent=`
     #panel>section:nth-of-type(2) .admin-slot{min-height:40px;font-size:14px;padding:9px 3px}
   }
   @media(max-width:600px){section{padding:18px 15px}.cal-weekdays,.cal-grid{gap:4px}.cal-day{min-height:65px;padding:8px 2px 4px;border-radius:9px}.cal-date{font-size:15px}.cal-count{font-size:10px;padding:1px 5px}.cal-title{font-size:24px}.cal-actions{gap:5px}.cal-nav{width:38px;height:38px}.cal-today{padding:9px 10px}.cal-toolbar{align-items:flex-start}.dash-stats{gap:6px}.dash-stat{padding:12px 9px}.dash-stat span{font-size:11px}.dash-filters{grid-template-columns:1fr}.dash-view{flex:1;padding:11px 5px}}
+  @media(max-width:760px){
+    header{padding:15px 14px}
+    header nav{font-size:14px}
+    main{margin:14px auto;padding:0 12px}
+    main>h1{font-size:29px;margin:12px 0}
+    #panel{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+    #panel>#logout{display:block;margin:4px 0 14px auto;font-size:13px;padding:9px 12px}
+    #panel>section{display:none;margin:0 0 12px;padding:18px 14px}
+    #panel[data-mobile-view="calendar"]>section:nth-of-type(1),
+    #panel[data-mobile-view="customers"]>section:nth-of-type(1),
+    #panel[data-mobile-view="booking"]>section:nth-of-type(2),
+    #panel[data-mobile-view="blocking"]>section:nth-of-type(3){display:block}
+    #panel>section h2{font-size:22px;margin:3px 0 14px}
+    #panel[data-mobile-view="customers"] #calendarUi .dash-stats,
+    #panel[data-mobile-view="customers"] #calendarUi .cal-hint,
+    #panel[data-mobile-view="customers"] #calendarUi .cal-weekdays,
+    #panel[data-mobile-view="customers"] #calendarUi .cal-grid,
+    #panel[data-mobile-view="customers"] #calendarUi .cal-legend,
+    #panel[data-mobile-view="customers"] #calendarUi .dash-controls,
+    #panel[data-mobile-view="customers"] .cal-jump{display:none}
+    #panel[data-mobile-view="customers"] .cal-toolbar{border-bottom:1px solid #80593d;padding-bottom:13px}
+    #panel[data-mobile-view="customers"] .cal-summary{margin-top:5px}
+    #panel[data-mobile-view="calendar"] .dash-filters{display:none}
+    #mobileAdminTabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;position:fixed;z-index:50;bottom:0;left:0;right:0;padding:8px 7px calc(9px + env(safe-area-inset-bottom,0px));background:#2b1b14;border-top:1px solid #a77d4b;box-shadow:0 -5px 25px #0008}
+    #mobileAdminTabs button{margin:0;padding:8px 2px;min-height:55px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:transparent;color:#efddc5;border:1px solid transparent;border-radius:11px;font-size:11px;line-height:1.2;white-space:nowrap}
+    #mobileAdminTabs button[aria-selected="true"]{background:#e8bd76;color:#28190f;border-color:#f6dba5}
+    #mobileAdminTabs .mobile-tab-icon{font-size:21px;line-height:1}
+    #mobileAdminTabs button:focus-visible{outline:3px solid #fff1da;outline-offset:-2px}
+    #panel[data-mobile-view="booking"] .admin-slot-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+    #panel[data-mobile-view="booking"] .admin-slot{min-height:43px;padding:8px 1px;font-size:14px}
+  }
   @media(max-width:370px){.cal-day{min-height:57px}.cal-date{font-size:14px}.cal-count{font-size:9px}.cal-title{font-size:21px}}
 `;
 document.head.append(calendarStyle);
@@ -130,7 +162,12 @@ addFromDay.type='button';
 addFromDay.className='cal-jump';
 addFromDay.textContent='+ Pridať rezerváciu na tento deň';
 $('bookings').after(addFromDay);
-addFromDay.onclick=()=>{$('date').value=selectedDay;refreshAdminSlots();$('bookingForm').scrollIntoView({behavior:'smooth',block:'start'});};
+addFromDay.onclick=()=>{
+  $('date').value=selectedDay;
+  refreshAdminSlots();
+  if(mobileMedia.matches)showMobileView('booking');
+  else $('bookingForm').scrollIntoView({behavior:'smooth',block:'start'});
+};
 const slotGrid=document.createElement('div');
 slotGrid.id='adminSlots';slotGrid.className='admin-slot-grid';
 slotGrid.setAttribute('role','group');slotGrid.setAttribute('aria-label','Voľné a obsadené časy');
@@ -145,6 +182,48 @@ blockHeader.textContent='Prestávka alebo neprítomnosť';
 const blockHelp=document.createElement('p');blockHelp.className='muted';
 blockHelp.textContent='Rezervované časy sa blokujú automaticky. Tento formulár slúži iba na dovolenku, prestávku alebo výnimočné uzatvorenie termínu.';
 blockHeader.after(blockHelp);
+// Keep the wide desktop dashboard intact; mobile users see one task at a time.
+const mobileSections={calendar:reservationSection,booking:$('bookingForm').closest('section'),customers:reservationSection,blocking:$('blockForm').closest('section')};
+const mobileTabBar=document.createElement('nav');
+mobileTabBar.id='mobileAdminTabs';
+mobileTabBar.setAttribute('aria-label','Mobilná navigácia administrácie');
+const mobileTabButtons={};
+for(const [view,icon,label] of [['calendar','📅','Kalendár'],['booking','＋','Pridať termín'],['customers','👥','Zákazníci'],['blocking','⛔','Blokovať']]){
+  const button=document.createElement('button');
+  button.type='button';
+  button.setAttribute('aria-label',label);
+  button.innerHTML='<span class="mobile-tab-icon" aria-hidden="true">'+icon+'</span><span>'+label+'</span>';
+  button.onclick=()=>showMobileView(view);
+  mobileTabButtons[view]=button;
+  mobileTabBar.append(button);
+}
+$('panel').append(mobileTabBar);
+const mobileMedia=window.matchMedia('(max-width:760px)');
+let mobileView='calendar';
+function showMobileView(view){
+  if(!mobileSections[view])return;
+  mobileView=view;
+  if(mobileMedia.matches){
+    $('panel').dataset.mobileView=view;
+    reservationSection.querySelector('h2').textContent=view==='customers'?'Zákazníci a rezervácie':'Kalendár rezervácií';
+    if(view==='customers')setAgendaView('list');
+    else if(view==='calendar'&&agendaView==='list')setAgendaView('day');
+    for(const [key,button] of Object.entries(mobileTabButtons)){
+      const selected=key===view;
+      button.setAttribute('aria-selected',String(selected));
+      if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
+    }
+    window.scrollTo({top:0,behavior:'instant'});
+  }
+}
+function syncMobileView(){
+  if(mobileMedia.matches)showMobileView(mobileView);
+  else{
+    $('panel').removeAttribute('data-mobile-view');
+    reservationSection.querySelector('h2').textContent='Kalendár rezervácií';
+  }
+}
+mobileMedia.addEventListener('change',syncMobileView);
 const eyeIcon='<svg aria-hidden="true" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
 const eyeOffIcon='<svg aria-hidden="true" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18M10.6 5.1A11.5 11.5 0 0 1 12 5c6.5 0 10 7 10 7a13 13 0 0 1-3.2 3.9M6.4 6.4C3.5 8.2 2 12 2 12s3.5 7 10 7a9.8 9.8 0 0 0 4.2-.9"/><path d="M10 10a3 3 0 0 0 4 4"/></svg>';
 for(const id of ['password','newPassword','confirmPassword']){
@@ -345,6 +424,7 @@ let calendarYear=Number(today.slice(0,4)),calendarMonth=Number(today.slice(5,7))
 let calendarBookings=[],calendarBlocks=[],calendarRequest=0;
 let agendaView='day',agendaPage=0;
 const agendaPageSize=10;
+syncMobileView();
 const utcDay=(year,month,day)=>new Date(Date.UTC(year,month,day)).toISOString().slice(0,10);
 const dayOffset=(day,count)=>new Date(new Date(day+'T12:00:00Z').getTime()+count*864e5).toISOString().slice(0,10);
 const mondayOf=day=>dayOffset(day,-((new Date(day+'T12:00:00Z').getUTCDay()+6)%7));
@@ -567,7 +647,9 @@ $('bookingForm').onsubmit=async e=>{
     }
     status('Rezervácia bola uložená. Čas '+chosen+' sa automaticky zablokoval pre ďalšie rezervácie.');
     e.target.reset();selectedDay=bookedDay;calendarYear=Number(bookedDay.slice(0,4));calendarMonth=Number(bookedDay.slice(5,7))-1;
-    $('date').value=bookedDay;await loadBookings();reservationSection.scrollIntoView({behavior:'smooth',block:'start'});
+    $('date').value=bookedDay;await loadBookings();
+    if(mobileMedia.matches)showMobileView('calendar');
+    else reservationSection.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(error){
     const message='Dostupnosť sa nepodarilo bezpečne overiť. Rezervácia sa neuložila. Skúste znova.';
     status(message);slotNotice(message);
@@ -582,7 +664,9 @@ $('blockForm').onsubmit=async e=>{
   status(error?(error.code==='23P01'?'Tento čas už obsahuje rezerváciu alebo iné blokovanie. Zvoľte iný čas.':'Blokovanie sa nepodarilo: '+error.message):'Termín bol zablokovaný.');
   if(!error){
     e.target.reset();const day=localDay(start);selectedDay=day;calendarYear=Number(day.slice(0,4));calendarMonth=Number(day.slice(5,7))-1;
-    $('date').value=day;await loadBookings();reservationSection.scrollIntoView({behavior:'smooth',block:'start'});
+    $('date').value=day;await loadBookings();
+    if(mobileMedia.matches)showMobileView('calendar');
+    else reservationSection.scrollIntoView({behavior:'smooth',block:'start'});
   }
 };
 check();
