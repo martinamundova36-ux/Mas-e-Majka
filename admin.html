@@ -40,6 +40,15 @@ calendarStyle.textContent=`
   .cal-entry button{font-size:13px;margin:9px 0 0;padding:9px 12px}
   .cal-empty{border:1px dashed #8b6a4d;border-radius:12px;padding:22px 14px;color:#e9d3ba;text-align:center}
   .cal-jump{background:#e8bd76;padding:10px 14px;font-size:14px;margin:16px 0 0}
+  .admin-slot-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 4px}
+  .admin-slot{margin:0;padding:12px 3px;min-height:46px;border:1px solid #60947c;background:#d4f2dc;color:#193b2c;border-radius:10px;font-size:15px}
+  .admin-slot.is-busy{background:#754c45;border-color:#bb7163;color:#ffe1d9}
+  .admin-slot.is-blocked{background:#665148;border-color:#a78a72;color:#edd2c4}
+  .admin-slot.is-selected{background:#e8bd76;border-color:#fff0ce;color:#29190d;box-shadow:0 0 0 2px #f4d39c}
+  .admin-slot:disabled{cursor:wait;opacity:.6}
+  .admin-slot-note{font-size:13px;color:#e8d0b7;margin:6px 0 8px;line-height:1.5}
+  .admin-slot-alert{padding:11px 13px;border-radius:10px;background:#78423e;border:1px solid #e7a69e;color:#fff1e5;margin:12px 0}
+  .admin-slot-alert.is-ok{background:#295543;border-color:#83bba1}
   @media(max-width:600px){section{padding:18px 15px}.cal-weekdays,.cal-grid{gap:4px}.cal-day{min-height:65px;padding:8px 2px 4px;border-radius:9px}.cal-date{font-size:15px}.cal-count{font-size:10px;padding:1px 5px}.cal-title{font-size:24px}.cal-actions{gap:5px}.cal-nav{width:38px;height:38px}.cal-today{padding:9px 10px}.cal-toolbar{align-items:flex-start}}
   @media(max-width:370px){.cal-day{min-height:57px}.cal-date{font-size:14px}.cal-count{font-size:9px}.cal-title{font-size:21px}}
 `;
@@ -72,7 +81,21 @@ addFromDay.type='button';
 addFromDay.className='cal-jump';
 addFromDay.textContent='+ Pridať rezerváciu na tento deň';
 $('bookings').after(addFromDay);
-addFromDay.onclick=()=>{$('date').value=selectedDay;$('bookingForm').scrollIntoView({behavior:'smooth',block:'start'});};
+addFromDay.onclick=()=>{$('date').value=selectedDay;refreshAdminSlots();$('bookingForm').scrollIntoView({behavior:'smooth',block:'start'});};
+const slotGrid=document.createElement('div');
+slotGrid.id='adminSlots';slotGrid.className='admin-slot-grid';
+slotGrid.setAttribute('role','group');slotGrid.setAttribute('aria-label','Voľné a obsadené časy');
+const slotInfo=document.createElement('p');slotInfo.className='admin-slot-note';
+slotInfo.textContent='Zelená = voľné · červená = obsadené · zlatá = vybrané. Obsadené termíny sa automaticky blokujú.';
+const slotAlert=document.createElement('p');slotAlert.id='slotAlert';slotAlert.className='admin-slot-alert';
+slotAlert.setAttribute('role','alert');slotAlert.hidden=true;
+$('time').type='hidden';$('time').required=false;
+$('time').after(slotInfo,slotGrid,slotAlert);
+const blockHeader=$('blockForm').closest('section').querySelector('h2');
+blockHeader.textContent='Prestávka alebo neprítomnosť';
+const blockHelp=document.createElement('p');blockHelp.className='muted';
+blockHelp.textContent='Rezervované časy sa blokujú automaticky. Tento formulár slúži iba na dovolenku, prestávku alebo výnimočné uzatvorenie termínu.';
+blockHeader.after(blockHelp);
 const eyeIcon='<svg aria-hidden="true" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
 const eyeOffIcon='<svg aria-hidden="true" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 18 18M10.6 5.1A11.5 11.5 0 0 1 12 5c6.5 0 10 7 10 7a13 13 0 0 1-3.2 3.9M6.4 6.4C3.5 8.2 2 12 2 12s3.5 7 10 7a9.8 9.8 0 0 0 4.2-.9"/><path d="M10 10a3 3 0 0 0 4 4"/></svg>';
 for(const id of ['password','newPassword','confirmPassword']){
@@ -173,12 +196,74 @@ $('resetForm').onsubmit=async e=>{e.preventDefault();const pass=$('newPassword')
 let services=[];
 const local=(d)=>new Date(d).toLocaleString('sk-SK',{timeZone:'Europe/Bratislava'});
 const iso=(date,time)=>new Date(date+'T'+time+':00+01:00').toISOString();
-function toUtc(date,time){const d=new Date(date+'T'+time+':00');const fmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Bratislava',timeZoneName:'longOffset'}).formatToParts(d).find(x=>x.type==='timeZoneName')?.value||'GMT+01:00';const offset=fmt.replace('GMT','');return new Date(date+'T'+time+':00'+offset).toISOString()}
+function toUtc(date,time){
+  const noon=new Date(date+'T12:00:00Z');
+  const zone=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Bratislava',timeZoneName:'shortOffset'}).formatToParts(noon).find(x=>x.type==='timeZoneName')?.value||'GMT+1';
+  const offset=Number(zone.replace('GMT',''))||1;
+  const [hour,minute]=time.split(':').map(Number);
+  return new Date(Date.parse(date+'T00:00:00Z')+(hour*60+minute-offset*60)*60000).toISOString();
+}
 async function check(){if(recovering){showReset();return}const {data:{user}}=await db.auth.getUser();if(!user){$('login').hidden=false;$('panel').hidden=true;status('Prihláste sa.');return}const {data,error}=await db.from('majka_admins').select('role').eq('user_id',user.id).maybeSingle();if(error||!data){await db.auth.signOut();$('login').hidden=false;$('panel').hidden=true;status('Tento účet zatiaľ nemá pridelené oprávnenie ADMIN.');return}$('login').hidden=true;$('panel').hidden=false;status('Prihlásený administrátor: '+user.email);await load()}
 $('loginForm').onsubmit=async e=>{e.preventDefault();status('Overujem…');const {error}=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});if(error){status('Prihlásenie sa nepodarilo. Skontrolujte údaje.');return}await check()};
 $('logout').onclick=async()=>{await db.auth.signOut();await check()};
 const localDay=value=>new Date(value).toLocaleDateString('sv-SE',{timeZone:'Europe/Bratislava'});
 const localTime=value=>new Date(value).toLocaleTimeString('sk-SK',{timeZone:'Europe/Bratislava',hour:'2-digit',minute:'2-digit'});
+const overlaps=(firstStart,firstEnd,secondStart,secondEnd)=>new Date(firstStart)<new Date(secondEnd)&&new Date(firstEnd)>new Date(secondStart);
+let slotRequest=0;
+function slotNotice(message,success=false){
+  slotAlert.textContent=message;slotAlert.hidden=!message;
+  slotAlert.classList.toggle('is-ok',success);
+}
+async function readDayConflicts(day){
+  const at=Date.parse(day+'T00:00:00Z');
+  const min=new Date(at-864e5).toISOString(),max=new Date(at+2*864e5).toISOString();
+  const [b,x]=await Promise.all([
+    db.from('majka_bookings').select('starts_at,ends_at,status').in('status',['pending','confirmed']).lt('starts_at',max).gt('ends_at',min),
+    db.from('majka_blocked_times').select('starts_at,ends_at').lt('starts_at',max).gt('ends_at',min)
+  ]);
+  if(b.error||x.error)throw Error('Dostupnosť termínov sa nepodarilo overiť.');
+  return {bookings:b.data||[],blocks:x.data||[]};
+}
+async function refreshAdminSlots(){
+  const request=++slotRequest;
+  const day=$('date').value;
+  const selectedService=services.find(s=>String(s.id)===$('service').value);
+  $('time').value='';slotGrid.replaceChildren();slotNotice('');
+  if(!day||!selectedService){slotInfo.textContent='Najprv vyberte dátum a masáž.';return}
+  slotInfo.textContent='Overujem, ktoré časy sú voľné…';
+  let busy;
+  try{busy=await readDayConflicts(day)}catch(e){if(request===slotRequest)slotNotice('Nepodarilo sa overiť obsadenosť. Skúste obnoviť kalendár.');return}
+  if(request!==slotRequest)return;
+  const weekday=new Date(day+'T12:00:00Z').getUTCDay();
+  const duration=Number(selectedService.duration_minutes);
+  let free=0;
+  for(let minute=9*60;minute+duration<=17*60+30;minute+=30){
+    const label=String(Math.floor(minute/60)).padStart(2,'0')+':'+String(minute%60).padStart(2,'0');
+    const start=toUtc(day,label),end=new Date(Date.parse(start)+duration*60000).toISOString();
+    const booked=busy.bookings.some(b=>overlaps(start,end,b.starts_at,b.ends_at));
+    const blocked=busy.blocks.some(b=>overlaps(start,end,b.starts_at,b.ends_at));
+    const closed=weekday===0||weekday===6||Date.parse(start)<Date.now();
+    const unavailable=booked||blocked||closed;
+    const button=document.createElement('button');button.type='button';button.className='admin-slot';
+    if(booked)button.classList.add('is-busy');else if(blocked||closed)button.classList.add('is-blocked');
+    button.textContent=label;
+    button.setAttribute('aria-pressed','false');
+    button.setAttribute('aria-disabled',String(unavailable));
+    button.setAttribute('aria-label',label+(unavailable?' – obsadené alebo nedostupné':' – voľné'));
+    if(!unavailable)free++;
+    button.onclick=()=>{
+      if(unavailable){slotNotice('Čas '+label+' je obsadený alebo nedostupný. Vyberte zelený voľný termín.');return}
+      $('time').value=label;
+      slotGrid.querySelectorAll('.admin-slot').forEach(b=>{b.classList.toggle('is-selected',b===button);b.setAttribute('aria-pressed',String(b===button))});
+      slotNotice('Vybraný voľný čas: '+label+'. Po uložení sa automaticky zablokuje aj pre ďalších zákazníkov.',true);
+    };
+    slotGrid.append(button);
+  }
+  slotInfo.textContent='Zelená = voľné · červená = obsadené · sivá = mimo prevádzky · zlatá = vybrané.';
+  if(!free)slotNotice('Na tento deň nie sú voľné termíny pre vybranú masáž. Zmeňte dátum alebo typ masáže.');
+}
+$('date').addEventListener('change',refreshAdminSlots);
+$('service').addEventListener('change',refreshAdminSlots);
 const today=localDay(new Date());
 let selectedDay=today;
 let calendarYear=Number(today.slice(0,4)),calendarMonth=Number(today.slice(5,7))-1;
@@ -232,7 +317,7 @@ function renderCalendar(){
     btn.onclick=async()=>{
       selectedDay=day;$('date').value=day;
       if(!inMonth){calendarYear=Number(day.slice(0,4));calendarMonth=Number(day.slice(5,7))-1;await loadBookings();}
-      else{renderCalendar();renderSelectedDay();}
+      else{renderCalendar();renderSelectedDay();refreshAdminSlots();}
     };
     grid.append(btn);
   }
@@ -300,7 +385,7 @@ async function loadBookings(){
   if(request!==calendarRequest)return;
   calendarBookings=bookings.data||[];calendarBlocks=blocks.data||[];
   if(bookings.error||blocks.error)status('Niektoré údaje kalendára sa nepodarilo načítať. Skúste obnovenie.');
-  renderCalendar();renderSelectedDay();
+  renderCalendar();renderSelectedDay();await refreshAdminSlots();
 }
 function changeCalendarMonth(delta){
   const next=new Date(Date.UTC(calendarYear,calendarMonth+delta,1));
@@ -314,22 +399,41 @@ $('calToday').onclick=()=>{const now=localDay(new Date());selectedDay=now;calend
 $('calRefresh').onclick=loadBookings;
 $('bookingForm').onsubmit=async e=>{
   e.preventDefault();
+  if(!e.target.reportValidity())return;
   const s=services.find(x=>String(x.id)===$('service').value);
   if(!s)return;
   const bookedDay=$('date').value;
-  const start=toUtc(bookedDay,$('time').value),end=new Date(new Date(start).getTime()+s.duration_minutes*60000).toISOString();
-  const {error}=await db.from('majka_bookings').insert({service_id:s.id,customer_name:$('name').value.trim(),customer_phone:$('phone').value.trim(),customer_email:$('customerEmail').value.trim(),note:$('note').value.trim()||null,starts_at:start,ends_at:end,status:'confirmed',deposit_eur:0,total_price_eur:s.price_eur,balance_due_eur:s.price_eur,payment_status:'unpaid'});
-  status(error?'Rezervácia sa neuložila: '+error.message:'Rezervácia bola uložená.');
-  if(!error){
+  const chosen=$('time').value;
+  if(!chosen){slotNotice('Najprv vyberte zelený voľný čas. Obsadené termíny nie je možné uložiť.');return}
+  const start=toUtc(bookedDay,chosen),end=new Date(new Date(start).getTime()+s.duration_minutes*60000).toISOString();
+  const submit=e.submitter||e.target.querySelector('[type="submit"]');
+  submit.disabled=true;
+  try{
+    const conflicts=await readDayConflicts(bookedDay);
+    if([...conflicts.bookings,...conflicts.blocks].some(b=>overlaps(start,end,b.starts_at,b.ends_at))){
+      await refreshAdminSlots();
+      slotNotice('UPOZORNENIE: tento termín už niekto obsadil. Vyberte iný zelený čas.');return;
+    }
+    const {error}=await db.from('majka_bookings').insert({service_id:s.id,customer_name:$('name').value.trim(),customer_phone:$('phone').value.trim(),customer_email:$('customerEmail').value.trim(),note:$('note').value.trim()||null,starts_at:start,ends_at:end,status:'confirmed',deposit_eur:0,total_price_eur:s.price_eur,balance_due_eur:s.price_eur,payment_status:'unpaid'});
+    if(error){
+      const message=error.code==='23P01'?'Termín sa práve obsadil alebo je zablokovaný. Vyberte iný čas.':'Rezervácia sa neuložila: '+error.message;
+      status(message);await refreshAdminSlots();slotNotice(message);return;
+    }
+    status('Rezervácia bola uložená. Čas '+chosen+' sa automaticky zablokoval pre ďalšie rezervácie.');
     e.target.reset();selectedDay=bookedDay;calendarYear=Number(bookedDay.slice(0,4));calendarMonth=Number(bookedDay.slice(5,7))-1;
     $('date').value=bookedDay;await loadBookings();reservationSection.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(error){
+    const message='Dostupnosť sa nepodarilo bezpečne overiť. Rezervácia sa neuložila. Skúste znova.';
+    status(message);slotNotice(message);
+  }finally{
+    submit.disabled=false;
   }
 };
 $('blockForm').onsubmit=async e=>{
   e.preventDefault();const start=new Date($('blockStart').value),end=new Date($('blockEnd').value);
   if(!(end>start)){status('Koniec blokovania musí byť po začiatku.');return}
   const {error}=await db.from('majka_blocked_times').insert({starts_at:start.toISOString(),ends_at:end.toISOString(),reason:'Blokované administrátorom'});
-  status(error?'Blokovanie sa nepodarilo: '+error.message:'Termín bol zablokovaný.');
+  status(error?(error.code==='23P01'?'Tento čas už obsahuje rezerváciu alebo iné blokovanie. Zvoľte iný čas.':'Blokovanie sa nepodarilo: '+error.message):'Termín bol zablokovaný.');
   if(!error){
     e.target.reset();const day=localDay(start);selectedDay=day;calendarYear=Number(day.slice(0,4));calendarMonth=Number(day.slice(5,7))-1;
     $('date').value=day;await loadBookings();reservationSection.scrollIntoView({behavior:'smooth',block:'start'});
