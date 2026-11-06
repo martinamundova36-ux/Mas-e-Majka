@@ -90,7 +90,17 @@
     $('timeSummary').textContent=verified
       ? tr('Dostupnosť podľa online evidencie: sivé časy nie sú dostupné. E-mailová žiadosť čas neblokuje; termín potvrdí Majka.','Online availability: grey times are unavailable. An email request does not hold a slot; Majka confirms the appointment.')
       : tr('Dostupnosť sa nepodarilo overiť. Časy sú orientačné; dostupnosť musí potvrdiť Majka.','Availability could not be verified. Times are indicative; Majka must confirm availability.');
-    for(let t=9*60;t+minutes<=17*60+30;t+=30){
+    // Match the server's adaptive slots: regular half-hours plus any exact
+    // :15/:45 start the server knows is available after an appointment.
+    const candidates=new Set();
+    for(let t=9*60;t+minutes<=17*60+30;t+=30)candidates.add(t);
+    if(verified)for(const label of available){
+      const match=/^(\d{2}):(\d{2})$/.exec(label);
+      if(!match)continue;
+      const t=Number(match[1])*60+Number(match[2]);
+      if(t>=9*60&&t+minutes<=17*60+30&&t%15===0)candidates.add(t);
+    }
+    for(const t of [...candidates].sort((a,b)=>a-b)){
       const label=pad(Math.floor(t/60))+':'+pad(t%60);
       const unavailable=verified&&!available.includes(label);
       const b=document.createElement('button');b.type='button';b.className='time-slot'+(!verified?' unverified':'');b.textContent=label;b.disabled=unavailable;
