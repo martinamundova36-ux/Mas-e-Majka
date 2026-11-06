@@ -110,7 +110,7 @@ calendarStyle.textContent=`
     #panel[data-mobile-view="calendar"] .dash-filters{display:none}
     #mobileAdminTabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;position:fixed;z-index:50;bottom:0;left:0;right:0;padding:8px 7px calc(9px + env(safe-area-inset-bottom,0px));background:#2b1b14;border-top:1px solid #a77d4b;box-shadow:0 -5px 25px #0008}
     #mobileAdminTabs button{margin:0;padding:8px 2px;min-height:55px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:transparent;color:#efddc5;border:1px solid transparent;border-radius:11px;font-size:11px;line-height:1.2;white-space:nowrap}
-    #mobileAdminTabs button[aria-selected="true"]{background:#e8bd76;color:#28190f;border-color:#f6dba5}
+    #mobileAdminTabs button[aria-pressed="true"]{background:#e8bd76;color:#28190f;border-color:#f6dba5}
     #mobileAdminTabs .mobile-tab-icon{font-size:21px;line-height:1}
     #mobileAdminTabs button:focus-visible{outline:3px solid #fff1da;outline-offset:-2px}
     #panel[data-mobile-view="booking"] .admin-slot-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
@@ -210,8 +210,7 @@ function showMobileView(view){
     else if(view==='calendar'&&agendaView==='list')setAgendaView('day');
     for(const [key,button] of Object.entries(mobileTabButtons)){
       const selected=key===view;
-      button.setAttribute('aria-selected',String(selected));
-      if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
+      button.setAttribute('aria-pressed',String(selected));
     }
     window.scrollTo({top:0,behavior:'instant'});
   }
