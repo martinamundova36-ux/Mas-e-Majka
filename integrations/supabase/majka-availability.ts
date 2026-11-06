@@ -32,11 +32,21 @@ Deno.serve(async req=>{
   const {data:blocks,error:xe}=await db.from("majka_blocked_times").select("starts_at,ends_at").lt("starts_at",new Date(dayEnd).toISOString()).gt("ends_at",new Date(dayStart).toISOString());
   if(xe)throw xe;
   const mins=(v:string)=>{const [a,b]=v.split(":").map(Number);return a*60+b};
+  // Half-hour starts plus exact end times of existing bookings/blocks.
+  // This avoids an artificial 15-minute gap after 45-minute treatments.
+  const opens=mins(hours.opens_at),closes=mins(hours.closes_at);
+  const intervals=[...(busy||[]),...(blocks||[])];
+  const candidates=new Set<number>();
+  for(let t=opens;t+svc.duration_minutes<=closes;t+=30)candidates.add(t);
+  for(const interval of intervals){
+   const boundary=(Date.parse(interval.ends_at)-dayStart)/60000;
+   if(Number.isInteger(boundary)&&boundary%15===0&&boundary>=opens&&boundary+svc.duration_minutes<=closes)candidates.add(boundary);
+  }
   const slots:string[]=[];
-  for(let t=mins(hours.opens_at);t+svc.duration_minutes<=mins(hours.closes_at);t+=30){
+  for(const t of [...candidates].sort((a,b)=>a-b)){
    const start=dayStart+t*60000,end=start+svc.duration_minutes*60000;
    if(start<Date.now()+3600000)continue;
-   if([...(busy||[]),...(blocks||[])].some(x=>Date.parse(x.starts_at)<end&&Date.parse(x.ends_at)>start))continue;
+   if(intervals.some(x=>Date.parse(x.starts_at)<end&&Date.parse(x.ends_at)>start))continue;
    slots.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));
   }
   return respond({services,slots,configured:true});
