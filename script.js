@@ -37,7 +37,7 @@
   const form = $('bookingForm'), service = $('service'), date = $('date'), time = $('time'), message = $('formMessage');
   const slotLegend=document.createElement('p');
   slotLegend.className='booking-slot-legend';
-  slotLegend.textContent=tr('Zelená = voľné, červená = obsadené, béžová = neoverené. E-mailová žiadosť čas neblokuje; termín potvrdí Majka.','Green = available, red = occupied, beige = unverified. Email requests do not block a time; Majka confirms appointments.');
+  slotLegend.textContent=tr('Zelená = voľné, červená = obsadené, béžová = neoverené. E-mailová žiadosť čas neblokuje; termín vám osobne potvrdím.','Green = available, red = occupied, beige = unverified. Email requests do not block a time; I personally confirm appointments.');
   $('timeSlots').before(slotLegend);
   const pad = n => String(n).padStart(2, '0');
   const fmt = d => [d.getFullYear(), pad(d.getMonth()+1), pad(d.getDate())].join('-');
@@ -88,8 +88,8 @@
     if(requestVersion!==version)return;
     const minutes=duration();
     $('timeSummary').textContent=verified
-      ? tr('Dostupnosť podľa online evidencie: sivé časy nie sú dostupné. E-mailová žiadosť čas neblokuje; termín potvrdí Majka.','Online availability: grey times are unavailable. An email request does not hold a slot; Majka confirms the appointment.')
-      : tr('Dostupnosť sa nepodarilo overiť. Časy sú orientačné; dostupnosť musí potvrdiť Majka.','Availability could not be verified. Times are indicative; Majka must confirm availability.');
+      ? tr('Dostupnosť podľa online evidencie: sivé časy nie sú dostupné. E-mailová žiadosť čas neblokuje; termín vám osobne potvrdím.','Online availability: grey times are unavailable. An email request does not hold a slot; I personally confirm the appointment.')
+      : tr('Dostupnosť sa nepodarilo overiť. Časy sú orientačné; dostupnosť vám osobne potvrdím.','Availability could not be verified. Times are indicative; I will personally confirm availability.');
     // Match the server's adaptive slots: regular half-hours plus any exact
     // :15/:45 start the server knows is available after an appointment.
     const candidates=new Set();
@@ -107,7 +107,7 @@
       b.setAttribute('aria-pressed','false');b.setAttribute('aria-label',label+(unavailable?tr(' – nedostupné',' – unavailable'):''));
       if(!unavailable)time.add(new Option(label,label));
       b.addEventListener('click',()=>{time.value=label; document.querySelectorAll('.time-slot').forEach(x=>{x.classList.toggle('selected',x===b);x.setAttribute('aria-pressed',String(x===b));});
-        $('timeSummary').textContent=tr('Vybraný čas: ','Selected time: ')+label+' – '+pad(Math.floor((t+minutes)/60))+':'+pad((t+minutes)%60)+' ('+minutes+' min). '+tr('Termín potvrdí Majka.','Majka must confirm the appointment.');});
+        $('timeSummary').textContent=tr('Vybraný čas: ','Selected time: ')+label+' – '+pad(Math.floor((t+minutes)/60))+':'+pad((t+minutes)%60)+' ('+minutes+' min). '+tr('Termín vám osobne potvrdím.','I will personally confirm the appointment.');});
       $('timeSlots').append(b);
     }
     if(verified&&!available.length)$('timeSummary').textContent=tr('Na tento dátum a masáž nie je v online evidencii voľný termín.','No available time for this date and treatment in the online schedule.');
@@ -151,7 +151,7 @@
         return;
       }
     }catch(_){
-      message.textContent=tr('Dostupnosť teraz nemožno overiť. Žiadosť sa neodoslala; skúste to neskôr alebo kontaktujte Majku telefonicky.','Availability cannot be checked right now. Your request was not sent; please try later or call Majka.');
+      message.textContent=tr('Dostupnosť teraz nemožno overiť. Žiadosť sa neodoslala; skúste to neskôr alebo zavolajte mi.','Availability cannot be checked right now. Your request was not sent; please try later or call me.');
       return;
     }finally{submit.disabled=false}
     const val=id=>$(id).value.trim();
