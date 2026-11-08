@@ -133,11 +133,14 @@ installBox.hidden=window.matchMedia('(display-mode: standalone)').matches||navig
 installBox.innerHTML='<strong>📲 Majka ADMIN na ploche telefónu</strong><p>Pridaj si administráciu ako aplikáciu. Ikonka ťa potom otvorí priamo v kalendári.</p>';
 const installButton=document.createElement('button');
 installButton.type='button';
-installButton.textContent='Pridať na plochu';
+installButton.textContent='Ako nainštalovať aplikáciu';
 const installInstructions=document.createElement('p');
 installInstructions.className='install-instructions';
 installInstructions.setAttribute('role','status');
-installInstructions.hidden=true;
+installInstructions.textContent=/iphone|ipad|ipod/i.test(navigator.userAgent)
+  ? 'iPhone: otvoriť v Safari → Zdieľať → Pridať na plochu.'
+  : 'Android: otvoriť v Chrome → tri bodky ⋮ → Inštalovať aplikáciu alebo Pridať na plochu. Ak si v Messengeri či WhatsAppe, najprv otvor odkaz v Chrome.';
+installInstructions.hidden=false;
 installBox.append(installButton,installInstructions);
 $('status').after(installBox);
 let deferredAppInstall=null;
@@ -145,6 +148,7 @@ window.addEventListener('beforeinstallprompt',event=>{
   event.preventDefault();
   deferredAppInstall=event;
   installButton.textContent='Nainštalovať Majka ADMIN';
+  installInstructions.hidden=true;
 });
 window.addEventListener('appinstalled',()=>{deferredAppInstall=null;installBox.hidden=true});
 installButton.onclick=async()=>{
