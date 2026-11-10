@@ -356,3 +356,39 @@ body.inner-luxury #formMessage:not(:empty) {
   color: #fff3ea;
   line-height: 1.5;
 }
+
+/* Small WEBU studio signature: visible, yet secondary to Majka's content. */
+footer .footer-grid .site-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-left: .7rem;
+  padding: .3rem .75rem;
+  border: 1px solid rgba(231, 190, 129, .55);
+  border-radius: 999px;
+  background: rgba(35, 18, 10, .48);
+  color: #f5e2c8;
+  font-size: .74rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+footer .footer-grid .site-credit a {
+  color: #f5c77e;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-decoration: none;
+}
+footer .footer-grid .site-credit a:hover,
+footer .footer-grid .site-credit a:focus-visible {
+  color: #fff3d5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 700px) {
+  footer .footer-grid .site-credit {
+    display: inline-flex;
+    margin: 8px 0 0;
+    white-space: normal;
+  }
+}
