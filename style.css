@@ -272,3 +272,9 @@ html[lang=en] .time-slots:empty:before{content:'Choose a treatment and date'}
 .service-card h2.service-heading{font-size:1.7rem;line-height:1.18;margin:16px 0;letter-spacing:normal}.inner-luxury .form-panel h2.form-heading{font-size:1.3rem;margin:0 0 8px;letter-spacing:normal}
 
 .contact-grid h2.contact-heading,.contact-share h2.contact-heading{font-size:1.7rem;line-height:1.18;margin:16px 0;letter-spacing:normal}
+
+/* Author credit on blog cards and article pages */
+.blog-byline{margin:12px 0 18px;font-size:.92rem;line-height:1.5;color:#735b47}
+.blog-byline strong{color:#382115;font-weight:700}
+.blog-card .blog-byline{margin:14px 0 18px;padding-top:12px;border-top:1px solid #e3d2bf;font-size:.85rem;line-height:1.5}
+.blog-article .blog-byline{margin:0 0 18px;line-height:1.5}
