@@ -24,141 +24,8 @@
     frame.style.cssText = 'display:block;width:100%;height:100%;min-height:220px;border:0';
     button.closest('.video-consent').replaceWith(frame);
   }));
-  document.querySelectorAll('a[data-service]').forEach(a => {
-    const url = new URL(a.href); url.searchParams.set('service', a.dataset.service); a.href = url.href;
-  });
-  if ($('contactForm')) $('contactForm').addEventListener('submit', e => {
-    e.preventDefault(); if (!e.currentTarget.reportValidity()) return;
-    const body = tr('Meno: ', 'Name: ') + $('contactName').value.trim() + '\n' + tr('E-mail: ', 'Email: ') + $('contactEmail').value.trim() + '\n\n' + $('contactNote').value.trim();
-    $('contactFormStatus').textContent = tr('Správu odošlite vo svojej e-mailovej aplikácii. Web nepotvrdzuje jej doručenie.', 'Send the message in your email app. This website cannot confirm delivery.');
-    window.location.href = 'mailto:majahulmanova@gmail.com?subject=' + encodeURIComponent(tr('Otázka – Masáže Majka', 'Enquiry – Masáže Majka')) + '&body=' + encodeURIComponent(body);
-  });
-  if (!$('bookingForm')) return;
-  const form = $('bookingForm'), service = $('service'), date = $('date'), time = $('time'), message = $('formMessage');
-  const slotLegend=document.createElement('p');
-  slotLegend.className='booking-slot-legend';
-  slotLegend.textContent=tr('Zelená = voľné, červená = obsadené, béžová = neoverené. E-mailová žiadosť čas neblokuje; termín vám osobne potvrdím.','Green = available, red = occupied, beige = unverified. Email requests do not block a time; I personally confirm appointments.');
-  $('timeSlots').before(slotLegend);
-  const pad = n => String(n).padStart(2, '0');
-  const fmt = d => [d.getFullYear(), pad(d.getMonth()+1), pad(d.getDate())].join('-');
-  const localToday = new Intl.DateTimeFormat('sv-SE', {timeZone:'Europe/Bratislava', year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-  const startDay = new Date(localToday + 'T00:00:00');
-  // One calendar month, clamped at the last day of the following month.
-  const maxDay = new Date(startDay.getFullYear(), startDay.getMonth()+2, 0);
-  maxDay.setDate(Math.min(startDay.getDate(), maxDay.getDate()));
-  date.min = fmt(startDay); date.max = fmt(maxDay);
-  let viewYear = startDay.getFullYear(), viewMonth = startDay.getMonth(), version = 0, activeRequest;
-  const duration = () => Number(service.value.match(/(\d+) min/)?.[1] || 30);
-  const validDay = d => !Number.isNaN(d.getTime()) && d >= startDay && d <= maxDay && d.getDay() > 0 && d.getDay() < 6;
-  function renderCalendar() {
-    const days = $('calDays'); if (!days) return;
-    days.replaceChildren(); $('calMonth').textContent = new Date(viewYear,viewMonth,1).toLocaleDateString(locale,{month:'long',year:'numeric'});
-    for (let i=0; i<(new Date(viewYear,viewMonth,1).getDay()+6)%7; i++) { const empty=document.createElement('span'); empty.className='calendar-empty'; days.append(empty); }
-    for (let n=1; n<=new Date(viewYear,viewMonth+1,0).getDate(); n++) {
-      const d = new Date(viewYear,viewMonth,n), b=document.createElement('button');
-      b.type='button'; b.textContent=n; b.disabled=!validDay(d);
-      b.className='calendar-day'+(b.disabled?' unavailable':'')+(date.value===fmt(d)?' selected':'');
-      b.setAttribute('aria-label',d.toLocaleDateString(locale,{weekday:'long',day:'numeric',month:'long',year:'numeric'}));
-      b.setAttribute('aria-pressed',String(date.value===fmt(d)));
-      b.addEventListener('click',()=>{date.value=fmt(d); $('chosenDate').textContent=' – '+d.toLocaleDateString(locale); renderCalendar(); refreshTimes();});
-      days.append(b);
-    }
-    $('calPrev').disabled = viewYear===startDay.getFullYear() && viewMonth===startDay.getMonth();
-    $('calNext').disabled = new Date(viewYear,viewMonth+1,1)>maxDay;
-  }
-  $('calPrev').addEventListener('click',()=>{const d=new Date(viewYear,viewMonth-1,1); viewYear=d.getFullYear();viewMonth=d.getMonth();renderCalendar();});
-  $('calNext').addEventListener('click',()=>{const d=new Date(viewYear,viewMonth+1,1); viewYear=d.getFullYear();viewMonth=d.getMonth();renderCalendar();});
-  async function refreshTimes() {
-    const requestVersion=++version; activeRequest?.abort();
-    time.replaceChildren(new Option(tr('Vyberte čas','Select time'),''));
-    $('timeSlots').replaceChildren(); $('timeSummary').textContent='';
-    if (!service.value || !date.value || !validDay(new Date(date.value+'T00:00:00'))) return;
-    $('timeSummary').textContent=tr('Overujem voľné termíny…','Checking available times…');
-    let verified=false, available=[];
-    activeRequest=new AbortController(); const timer=setTimeout(()=>activeRequest.abort(),10000);
-    try {
-      const endpoint='https://zjwoqtyxsmafpfyobbgo.supabase.co/functions/v1/majka-availability?date='+encodeURIComponent(date.value)+'&service_id='+service.selectedOptions[0].dataset.serviceId;
-      const response=await fetch(endpoint,{cache:'no-store',signal:activeRequest.signal});
-      if(!response.ok) throw Error('Availability unavailable');
-      const result=await response.json();
-      if(!Array.isArray(result.slots))throw Error('Invalid availability');
-      available=result.slots; verified=result.configured===true;
-    } catch (_) { /* Request remains available as an explicitly unverified email enquiry. */ }
-    finally { clearTimeout(timer); }
-    if(requestVersion!==version)return;
-    const minutes=duration();
-    $('timeSummary').textContent=verified
-      ? tr('Dostupnosť podľa online evidencie: sivé časy nie sú dostupné. E-mailová žiadosť čas neblokuje; termín vám osobne potvrdím.','Online availability: grey times are unavailable. An email request does not hold a slot; I personally confirm the appointment.')
-      : tr('Dostupnosť sa nepodarilo overiť. Časy sú orientačné; dostupnosť vám osobne potvrdím.','Availability could not be verified. Times are indicative; I will personally confirm availability.');
-    // Match the server's adaptive slots: regular half-hours plus any exact
-    // :15/:45 start the server knows is available after an appointment.
-    const candidates=new Set();
-    for(let t=9*60;t+minutes<=17*60+30;t+=30)candidates.add(t);
-    if(verified)for(const label of available){
-      const match=/^(\d{2}):(\d{2})$/.exec(label);
-      if(!match)continue;
-      const t=Number(match[1])*60+Number(match[2]);
-      if(t>=9*60&&t+minutes<=17*60+30&&t%15===0)candidates.add(t);
-    }
-    for(const t of [...candidates].sort((a,b)=>a-b)){
-      const label=pad(Math.floor(t/60))+':'+pad(t%60);
-      const unavailable=verified&&!available.includes(label);
-      const b=document.createElement('button');b.type='button';b.className='time-slot'+(!verified?' unverified':'');b.textContent=label;b.disabled=unavailable;
-      b.setAttribute('aria-pressed','false');b.setAttribute('aria-label',label+(unavailable?tr(' – nedostupné',' – unavailable'):''));
-      if(!unavailable)time.add(new Option(label,label));
-      b.addEventListener('click',()=>{time.value=label; document.querySelectorAll('.time-slot').forEach(x=>{x.classList.toggle('selected',x===b);x.setAttribute('aria-pressed',String(x===b));});
-        $('timeSummary').textContent=tr('Vybraný čas: ','Selected time: ')+label+' – '+pad(Math.floor((t+minutes)/60))+':'+pad((t+minutes)%60)+' ('+minutes+' min). '+tr('Termín vám osobne potvrdím.','I will personally confirm the appointment.');});
-      $('timeSlots').append(b);
-    }
-    if(verified&&!available.length)$('timeSummary').textContent=tr('Na tento dátum a masáž nie je v online evidencii voľný termín.','No available time for this date and treatment in the online schedule.');
-  }
-  function updatePayment(){ /* Cash only; no online or advance payments. */ }
-  service.addEventListener('change',()=>{refreshTimes();updatePayment();});
-  date.addEventListener('change',()=>{renderCalendar();refreshTimes();});
 
-  const requested=new URLSearchParams(location.search).get('service');
-  const ids={klasicka:1,makke:5,bankovanie:6};
-  if(ids[requested])service.selectedIndex=ids[requested];
-  renderCalendar();refreshTimes();updatePayment();
-  form.addEventListener('submit',async e=>{
-    e.preventDefault(); message.textContent='';
-    if(!form.reportValidity())return;
-    if(!date.value||!validDay(new Date(date.value+'T00:00:00'))){message.textContent=tr('Vyberte pracovný deň najviac mesiac dopredu.','Choose a weekday within the next month.');return;}
-    if(!time.value){message.textContent=tr('Vyberte čas masáže.','Select a treatment time.');return;}
-    const submit=form.querySelector('[type="submit"]');
-    const chosenTime=time.value;
-    const chosenDate=date.value;
-    const chosenService=service.selectedOptions[0].dataset.serviceId;
-    submit.disabled=true;
-    message.textContent=tr('Pred odoslaním ešte overujem dostupnosť termínu…','Checking live availability before sending your request…');
-    try{
-      const endpoint='https://zjwoqtyxsmafpfyobbgo.supabase.co/functions/v1/majka-availability?date='+encodeURIComponent(chosenDate)+'&service_id='+chosenService;
-      const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),10000);
-      let result;
-      try{
-        const response=await fetch(endpoint,{cache:'no-store',signal:controller.signal});
-        if(!response.ok)throw Error('Availability unavailable');
-        result=await response.json();
-      }finally{clearTimeout(timer)}
-      if(result.configured!==true||!Array.isArray(result.slots))throw Error('Availability unverified');
-      if(date.value!==chosenDate||time.value!==chosenTime||service.selectedOptions[0].dataset.serviceId!==chosenService){
-        message.textContent=tr('Výber sa zmenil. Pred odoslaním prosím skontrolujte nový termín.','Your selection changed. Please check the new time before sending.');return;
-      }
-      if(!result.slots.includes(chosenTime)){
-        await refreshTimes();
-        message.textContent=tr('UPOZORNENIE: Tento čas už nie je dostupný. Vyberte iný zelený termín.','NOTICE: This time is no longer available. Please choose a different green slot.');
-        return;
-      }
-    }catch(_){
-      message.textContent=tr('Dostupnosť teraz nemožno overiť. Žiadosť sa neodoslala; skúste to neskôr alebo zavolajte mi.','Availability cannot be checked right now. Your request was not sent; please try later or call me.');
-      return;
-    }finally{submit.disabled=false}
-    const val=id=>$(id).value.trim();
-    const body=[tr('Dobrý deň,','Hello,'),'',tr('chcem požiadať o termín masáže.','I would like to request a massage appointment.'),'',tr('Masáž: ','Treatment: ')+service.selectedOptions[0].textContent,tr('Dátum: ','Date: ')+val('date'),tr('Preferovaný čas: ','Preferred time: ')+val('time'),tr('Platba: ','Payment: ')+tr('iba v hotovosti na mieste po masáži','cash only on site after the treatment'),tr('Meno: ','Name: ')+val('name'),tr('Telefón: ','Phone: ')+val('phone'),tr('E-mail: ','Email: ')+val('email'),tr('Poznámka: ','Note: ')+(val('note')||'—'),'',tr('Prosím o potvrdenie dostupnosti termínu.','Please confirm whether this appointment is available.')].join('\n');
-    message.textContent=tr('Otvára sa e-mailová aplikácia. Žiadosť sa odošle až po stlačení Odoslať v e-maile. Termín zatiaľ nie je rezervovaný ani potvrdený.','Opening your email app. Send the prepared email to submit your request. The appointment is not reserved or confirmed yet.');
-    window.location.href='mailto:majahulmanova@gmail.com?subject='+encodeURIComponent(tr('Žiadosť o termín – Masáže Majka','Appointment request – Masáže Majka'))+'&body='+encodeURIComponent(body);
-  });
+
 })();
 ;(()=>{document.querySelectorAll('.article-share').forEach(box=>{const native=box.querySelector('.share-native'),copy=box.querySelector('.share-copy'),status=box.querySelector('.share-feedback');if(native)native.addEventListener('click',async()=>{const data={title:document.title,text:document.title,url:location.href};if(navigator.share){try{await navigator.share(data)}catch(e){if(e.name!=='AbortError')status.textContent=(document.documentElement.lang==='en'?'Sharing failed.':'Zdieľanie sa nepodarilo.')}}else{status.textContent=(document.documentElement.lang==='en'?'Use Copy link and paste it into your chosen app.':'Použite Kopírovať odkaz a vložte ho do Instagramu alebo inej aplikácie.')}});if(copy)copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);status.textContent=(document.documentElement.lang==='en'?'Link copied.':'Odkaz bol skopírovaný.')}catch(e){status.textContent=(document.documentElement.lang==='en'?'Copy the address from your browser address bar.':'Skopírujte odkaz z adresného riadka prehliadača.')}})})})();
 
@@ -166,7 +33,6 @@
 
 ;(()=>{if(new URLSearchParams(location.search).get('lang')!=='en')return;document.querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');if(!h||h.startsWith('#')||h.startsWith('mailto:')||h.startsWith('tel:')||h.startsWith('http')||h.startsWith('data:')||a.closest('.language-switch'))return;try{const u=new URL(h,location.href);if(u.origin===location.origin){u.searchParams.set('lang','en');a.href=u.href}}catch(e){}})})();
 
-;(()=>{const b=document.getElementById('shareBookingMessenger');if(!b)return;const status=document.getElementById('shareBookingStatus');const url='https://martinamundova36-ux.github.io/Mas-e-Majka/'+(document.documentElement.lang==='en'?'en/':'')+'rezervacia.html';b.addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:'Masáže Majka – rezervácie',text:'Vyberte si termín masáže Masáže Majka',url});return}catch(e){if(e.name==='AbortError')return}}try{await navigator.clipboard.writeText(url);status.textContent=(document.documentElement.lang==='en'?'Link copied. Paste it into a Messenger message.':'Odkaz bol skopírovaný. Vložte ho do správy v Messengeri.')}catch(e){status.textContent=(document.documentElement.lang==='en'?'Link to share: ':'Odkaz na zdieľanie: ')+url}})})();
 
 
 /* Accessible gallery lightbox for existing gallery photos */
