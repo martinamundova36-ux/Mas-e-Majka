@@ -35,6 +35,11 @@
     <label for="appointment-note">Notes (optional)</label>
     <textarea id="appointment-note" name="note" maxlength="500" rows="3"></textarea>
     <p id="appointment-info">Open your prepared request, then send it. Majka will confirm your appointment. Please leave health details out of the notes.</p>
+    <div style="display:flex;align-items:center;gap:10px;margin:0 0 20px">
+      <input id="appointment-privacy" type="checkbox" required style="width:20px;height:20px;min-height:0;flex:none;accent-color:#e7bc73">
+      <div><label for="appointment-privacy" style="margin:0">I acknowledge the privacy notice.</label>
+      <a href="ochrana-osobnych-udajov.html" target="_blank" rel="noopener noreferrer" style="text-decoration:underline">Read the privacy notice</a></div>
+    </div>
     <button class="button full" type="submit">Open appointment email</button>
   </form>
 </section>
