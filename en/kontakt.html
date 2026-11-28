@@ -34,8 +34,9 @@
     <input id="appointment-email" name="email" type="email" autocomplete="email" maxlength="120" required>
     <label for="appointment-note">Notes (optional)</label>
     <textarea id="appointment-note" name="note" maxlength="500" rows="3"></textarea>
-    <p id="appointment-info">The form opens a prepared message in your email app. Send it there. Majka will confirm your appointment. Please leave health details out of the notes.</p>
-    <button class="button full" type="submit">Open appointment email</button>
+    <p id="appointment-info">Open your prepared request in Gmail or your email app, then send it. Majka will confirm your appointment. Please leave health details out of the notes.</p>
+    <button class="button full" type="submit">Open request in Gmail</button>
+    <p><button class="button" type="submit" value="email-app">Use another email app</button></p>
   </form>
 </section>
 <section class="contact-share" aria-labelledby="share-contact-title"><p class="eyebrow">RECOMMEND ME</p><h2 class="contact-heading" id="share-contact-title">Share contact details</h2><p>Share my contact card with phone number, email and address.</p><div class="contact-share-grid"><a class="contact-share-action" href="https://wa.me/?text=Mas%C3%A1%C5%BEe%20Majka%20%E2%80%93%20M%C3%A1ria%20Hulmanov%C3%A1%0APhone%3A%20%2B421%20948%20669%20477%0AE-mail%3A%20majahulmanova%40gmail.com%0AAddress%3A%20Tom%C3%A1%C5%A1ikova%2034%2C%20821%2001%20Bratislava%0AWeb%3A%20https%3A%2F%2Fmartinamundova36-ux.github.io%2FMas-e-Majka%2Fen%2Fkontakt.html" target="_blank" rel="noopener noreferrer"><span class="contact-share-icon">◉</span> WhatsApp</a><a class="contact-share-action" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fmartinamundova36-ux.github.io%2FMas-e-Majka%2Fen%2Fkontakt.html" target="_blank" rel="noopener noreferrer"><span class="contact-share-icon" aria-hidden="true" style="color:#1877f2;font-weight:900">f</span> Share on Facebook</a><button type="button" class="contact-share-action" id="shareMessenger"><span class="contact-share-icon">✉</span> Messenger</button><button type="button" class="contact-share-action" id="copyContact"><span class="contact-share-icon">▢</span> Copy contact details</button><a class="contact-share-action" href="../Masaze-Majka.vcf" download="Masaze-Majka.vcf"><span class="contact-share-icon">＋</span> Save contact</a></div><p class="contact-share-status" id="contactShareStatus" role="status" aria-live="polite"></p></section></div></section></main><footer><div class="wrap footer-grid"><a class="brand" href="index.html"><span class="flower"><svg class="lotus-icon" viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M32 43C22 32 22 18 32 5c10 13 10 27 0 38Z"/><path d="M32 43C18 41 9 31 8 17c13 2 23 10 24 26Z"/><path d="M32 43c14-2 23-12 24-26-13 2-23 10-24 26Z"/><path d="M32 43C19 47 9 42 3 32c12-4 22-1 29 11Z"/><path d="M32 43c13 4 23-1 29-11-12-4-22-1-29 11Z"/></svg></span><span>Masáže <em>Majka</em></span></a><p>© <span id="year"></span> Mária Hulmanová · Masáže Majka <span class="site-credit">Designed by <a href="https://www.webu.sk/" target="_blank" rel="noopener noreferrer">WEBU</a></span></p><div class="social-links" aria-label="Social links"><a class="social-icon" href="https://www.facebook.com/profile.php?id=61596901475460" target="_blank" rel="noopener noreferrer" aria-label="Masáže Majka on Facebook" title="Facebook Masáže Majka">f</a><a href="index.html">Back to top ↑</a></div></div>
@@ -63,8 +64,16 @@
       lines.push(label + ': ' + value.trim());
     }
     const subject = document.getElementById('appointment-title').textContent + ' – Masáže Majka';
-    window.location.href = 'mailto:majahulmanova@gmail.com?subject=' + encodeURIComponent(subject)
-      + '&body=' + encodeURIComponent(lines.join('\r\n'));
+    const recipient = 'majahulmanova@gmail.com';
+    const body = lines.join('\r\n');
+    if (event.submitter?.value === 'email-app') {
+      window.location.href = 'mailto:' + recipient + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(body);
+      return;
+    }
+    const gmail = new URL('https://mail.google.com/mail/');
+    gmail.search = new URLSearchParams({ view: 'cm', fs: '1', to: recipient, su: subject, body });
+    window.location.href = gmail.href;
   });
 })();
 </script></body></html>
