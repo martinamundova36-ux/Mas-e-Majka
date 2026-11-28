@@ -39,6 +39,11 @@
     <label for="appointment-note">Poznámka (nepovinné)</label>
     <textarea id="appointment-note" name="note" maxlength="500" rows="3"></textarea>
     <p id="appointment-info">Otvorte pripravenú e-mailovú žiadosť a odošlite ju. Termín platí po potvrdení od Majky. Do poznámky neuvádzajte zdravotné údaje.</p>
+    <div style="display:flex;align-items:center;gap:10px;margin:0 0 20px">
+      <input id="appointment-privacy" type="checkbox" required style="width:20px;height:20px;min-height:0;flex:none;accent-color:#e7bc73">
+      <div><label for="appointment-privacy" style="margin:0">Beriem na vedomie informácie o ochrane osobných údajov.</label>
+      <a href="ochrana-osobnych-udajov.html" target="_blank" rel="noopener noreferrer" style="text-decoration:underline">Prečítať zásady ochrany osobných údajov</a></div>
+    </div>
     <button class="button full" type="submit">Otvoriť e-mail so žiadosťou</button>
   </form>
 </section>
